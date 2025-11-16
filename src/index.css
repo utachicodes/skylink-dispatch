@@ -108,7 +108,7 @@ All colors MUST be HSL.
   }
 
   .animate-logo-glow {
-    animation: logoPulse 6s ease-in-out infinite;
+    animation: logoPulse 7s ease-in-out infinite;
   }
 
   .animate-float-slow {
@@ -128,12 +128,12 @@ All colors MUST be HSL.
 @keyframes logoPulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 0px rgba(138, 180, 255, 0.1));
-    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(138, 180, 255, 0.05));
+    transform: translateY(0) scale(1);
   }
   50% {
-    filter: drop-shadow(0 10px 26px rgba(138, 180, 255, 0.35));
-    transform: scale(1.04);
+    filter: drop-shadow(0 18px 40px rgba(138, 180, 255, 0.35));
+    transform: translateY(-4px) scale(1.03);
   }
 }
 

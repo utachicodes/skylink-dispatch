@@ -91,14 +91,8 @@ const Index = () => {
         <div className="relative max-w-6xl mx-auto px-6 py-20 flex flex-col gap-16">
           <div className="flex flex-col lg:flex-row items-center gap-12 animate-fade-up">
             <div className="flex-1 space-y-8">
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 w-fit">
-                <Sparkles className="h-4 w-4 text-accent" />
-                <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                  Aerial access for every mission
-                </span>
-              </div>
-              <img src="/logo-final.png" alt="SkyLink" className="h-20 md:h-24 opacity-95 animate-logo-glow" />
-              <h1 className="text-4xl md:text-6xl font-semibold leading-tight text-white">
+              <img src="/logo-final.png" alt="SkyLink" className="h-28 md:h-40 opacity-95 animate-logo-glow" />
+              <h1 className="text-4xl md:text-6xl font-semibold leading-tight text-white tracking-tight">
                 Drones for when roads don't cut it
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
@@ -128,7 +122,7 @@ const Index = () => {
                 {modes.map((mode) => (
                   <div
                     key={mode.title}
-                    className={`rounded-3xl border border-white/10 bg-gradient-to-br ${mode.accent} p-6 backdrop-blur`}
+                    className={`rounded-3xl border border-white/10 bg-gradient-to-br ${mode.accent} p-6 backdrop-blur transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40`}
                   >
                     <p className="text-sm text-white/70 uppercase tracking-[0.3em] mb-3">Two screens</p>
                     <h3 className="text-2xl font-semibold text-white">{mode.title}</h3>
@@ -141,7 +135,10 @@ const Index = () => {
 
           <div className="grid gap-6 md:grid-cols-3">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-3xl border border-white/5 bg-white/5 px-6 py-5 backdrop-blur">
+              <div
+                key={stat.label}
+                className="rounded-3xl border border-white/5 bg-white/5 px-6 py-5 backdrop-blur transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/40"
+              >
                 <p className="text-sm text-white/60 uppercase tracking-[0.3em]">{stat.label}</p>
                 <p className="text-4xl font-bold text-white mt-3">{stat.value}</p>
                 <p className="text-sm text-white/70 mt-1">{stat.sub}</p>
@@ -175,7 +172,10 @@ const Index = () => {
 
           <div className="grid gap-8 md:grid-cols-3 animate-fade-up">
             {features.map((feature) => (
-              <div key={feature.title} className="rounded-3xl border border-white/5 bg-white/5 px-6 py-10 space-y-4 backdrop-blur">
+              <div
+                key={feature.title}
+                className="rounded-3xl border border-white/5 bg-white/5 px-6 py-10 space-y-4 backdrop-blur transition-transform transition-shadow duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/40"
+              >
                 <feature.icon className="h-10 w-10 text-accent" />
                 <h3 className="text-2xl font-semibold text-white">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.desc}</p>
