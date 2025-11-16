@@ -109,74 +109,74 @@ export default function AdminDashboard() {
       <main className="p-6 max-w-7xl mx-auto space-y-6">
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Users</p>
-                  <p className="text-3xl font-bold">{stats.totalUsers}</p>
+                  <p className="text-3xl font-semibold text-sky-400">{stats.totalUsers}</p>
                 </div>
-                <Users className="h-8 w-8 text-primary" />
+                <Users className="h-8 w-8 text-sky-300" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Drones</p>
-                  <p className="text-3xl font-bold">{stats.activeDrones}</p>
+                  <p className="text-3xl font-semibold text-sky-300">{stats.activeDrones}</p>
                 </div>
-                <Plane className="h-8 w-8 text-accent" />
+                <Plane className="h-8 w-8 text-sky-200" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Deliveries Today</p>
-                  <p className="text-3xl font-bold">{stats.deliveriesToday}</p>
+                  <p className="text-3xl font-semibold text-slate-100">{stats.deliveriesToday}</p>
                 </div>
-                <Package className="h-8 w-8 text-green-500" />
+                <Package className="h-8 w-8 text-sky-300" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Success Rate</p>
-                  <p className="text-3xl font-bold">{stats.successRate}%</p>
+                  <p className="text-3xl font-semibold text-sky-200">{stats.successRate}%</p>
                 </div>
-                <Activity className="h-8 w-8 text-primary" />
+                <Activity className="h-8 w-8 text-sky-300" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  <p className="text-3xl font-bold">${stats.revenueToday}</p>
+                  <p className="text-3xl font-semibold text-sky-300">${stats.revenueToday}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-500" />
+                  <DollarSign className="h-8 w-8 text-sky-200" />
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Active Missions</p>
-                  <p className="text-3xl font-bold">{stats.activeMissions}</p>
+                  <p className="text-3xl font-semibold text-sky-300">{stats.activeMissions}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-accent" />
+                <TrendingUp className="h-8 w-8 text-sky-200" />
               </div>
             </CardContent>
           </Card>

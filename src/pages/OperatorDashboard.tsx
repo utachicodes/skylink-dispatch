@@ -132,37 +132,37 @@ export default function OperatorDashboard() {
 
       <main className="p-4 space-y-6 max-w-4xl mx-auto">
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-3xl font-bold text-primary">{stats.active}</p>
+                <p className="text-3xl font-semibold text-sky-400">{stats.active}</p>
                 <p className="text-sm text-muted-foreground">Active Jobs</p>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-3xl font-bold text-accent">{stats.completed}</p>
+                <p className="text-3xl font-semibold text-sky-300">{stats.completed}</p>
                 <p className="text-sm text-muted-foreground">Completed</p>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-3xl font-bold text-green-500">{stats.success}%</p>
+                <p className="text-3xl font-semibold text-sky-200">{stats.success}%</p>
                 <p className="text-sm text-muted-foreground">Success Rate</p>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/5 border-white/10">
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-3xl font-bold text-accent">${stats.totalEarnings.toFixed(2)}</p>
+                <p className="text-3xl font-semibold text-sky-300">${stats.totalEarnings.toFixed(2)}</p>
                 <p className="text-sm text-muted-foreground">Total Earnings</p>
                 {stats.pendingEarnings > 0 && (
-                  <p className="text-xs text-yellow-500 mt-1">${stats.pendingEarnings.toFixed(2)} pending</p>
+                  <p className="text-xs text-sky-200 mt-1">${stats.pendingEarnings.toFixed(2)} pending</p>
                 )}
               </div>
             </CardContent>

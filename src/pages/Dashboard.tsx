@@ -20,13 +20,20 @@ export default function Dashboard() {
   const completedDeliveries = deliveries.filter(d => d.status === "delivered");
 
   const getStatusColor = (status: string) => {
+    // Keep the palette in a tight blue/white family so the dashboard feels cohesive
     switch (status) {
-      case "in_flight": return "bg-blue-500";
-      case "confirmed": return "bg-green-500";
-      case "pending": return "bg-yellow-500";
-      case "arrived": return "bg-purple-500";
-      case "delivered": return "bg-emerald-500";
-      default: return "bg-gray-500";
+      case "in_flight":
+        return "bg-sky-500";
+      case "confirmed":
+        return "bg-blue-600";
+      case "pending":
+        return "bg-slate-500";
+      case "arrived":
+        return "bg-indigo-500";
+      case "delivered":
+        return "bg-sky-400";
+      default:
+        return "bg-slate-600";
     }
   };
 
@@ -54,26 +61,26 @@ export default function Dashboard() {
         ) : (
           <>
             <div className="grid gap-4 md:grid-cols-3">
-              <Card>
+              <Card className="bg-white/5 border-white/10">
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <p className="text-3xl font-bold text-primary">{activeDeliveries.length}</p>
+                    <p className="text-3xl font-semibold text-sky-400">{activeDeliveries.length}</p>
                     <p className="text-sm text-muted-foreground">Active</p>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-white/5 border-white/10">
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <p className="text-3xl font-bold text-accent">{completedDeliveries.length}</p>
+                    <p className="text-3xl font-semibold text-sky-300">{completedDeliveries.length}</p>
                     <p className="text-sm text-muted-foreground">Completed</p>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-white/5 border-white/10">
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <p className="text-3xl font-bold text-green-500">{pendingDeliveries.length}</p>
+                    <p className="text-3xl font-semibold text-slate-200">{pendingDeliveries.length}</p>
                     <p className="text-sm text-muted-foreground">Pending</p>
                   </div>
                 </CardContent>
@@ -89,7 +96,7 @@ export default function Dashboard() {
               New Delivery Request
             </Button>
 
-            <Card>
+            <Card className="bg-white/5 border-white/10">
               <CardHeader>
                 <CardTitle>Your Deliveries</CardTitle>
                 <CardDescription>

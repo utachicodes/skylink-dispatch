@@ -126,17 +126,17 @@ export default function PilotControl() {
             <img src="/logo-final.png" alt="SkyLink" className="h-10 rounded-xl bg-white/10 p-2" />
             <h1 className="text-xl font-bold">Pilot Control Room</h1>
             {mission && (
-              <Badge variant="outline" className="text-white border-white/30">
+              <Badge variant="outline" className="text-white border-sky-400/60">
                 Mission #{mission.id.slice(0, 8)}
               </Badge>
             )}
-            <Badge className={drone ? "bg-green-500" : "bg-yellow-500/40 text-yellow-200"}>
+            <Badge className={drone ? "bg-sky-500" : "bg-slate-600 text-slate-100"}>
               {drone ? `Linked · ${drone.droneId}` : "Waiting for drone"}
             </Badge>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Battery className="h-4 w-4 text-green-500" />
+              <Battery className="h-4 w-4 text-sky-400" />
               <span className="text-sm font-mono">{drone?.battery ?? "--"}%</span>
             </div>
             <div className="flex items-center gap-2">
