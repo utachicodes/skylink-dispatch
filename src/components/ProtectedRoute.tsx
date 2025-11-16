@@ -12,7 +12,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -22,8 +22,13 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/auth" replace />;
   }
 
-  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    return <Navigate to="/dashboard" replace />;
+  if (!userRole) {
+    return <Navigate to="/select-role" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    const defaultRoute = userRole === "operator" ? "/operator" : userRole === "admin" ? "/admin" : "/dashboard";
+    return <Navigate to={defaultRoute} replace />;
   }
 
   return <>{children}</>;
