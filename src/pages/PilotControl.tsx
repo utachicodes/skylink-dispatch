@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,10 +16,54 @@ import {
   Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTelemetry } from "@/hooks/useTelemetry";
+import { coreApi } from "@/lib/api";
+import { toast } from "sonner";
+import { useGamepad } from "@/hooks/useGamepad";
 
 export default function PilotControl() {
   const navigate = useNavigate();
-  const [battery, setBattery] = useState(85);
+  const { frames } = useTelemetry();
+  const [commandType, setCommandType] = useState<string | null>(null);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
+  const drone = useMemo(() => frames[0], [frames]);
+  const gamepad = useGamepad();
+  const axesRef = useRef<number[]>(gamepad.axes);
+
+  useEffect(() => {
+    axesRef.current = gamepad.axes;
+  }, [gamepad.axes]);
+
+  useEffect(() => {
+    if (!manualMode || !drone || !gamepad.connected) return;
+    setManualError(null);
+
+    const interval = setInterval(() => {
+      const [roll = 0, pitch = 0, yaw = 0, throttle = 0] = axesRef.current;
+      const magnitude = Math.max(Math.abs(roll), Math.abs(pitch), Math.abs(yaw), Math.abs(throttle));
+      if (magnitude < 0.08) return;
+
+      coreApi
+        .sendCommand({
+          droneId: drone.droneId,
+          type: "CUSTOM",
+          payload: {
+            mode: "MANUAL_OVERRIDE",
+            roll,
+            pitch,
+            yaw,
+            throttle,
+            timestamp: Date.now(),
+          },
+        })
+        .catch((error) => {
+          setManualError(error?.message || "Unable to relay joystick input");
+        });
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [manualMode, drone, gamepad.connected]);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -35,17 +79,22 @@ export default function PilotControl() {
             >
               <X className="h-5 w-5" />
             </Button>
+            <img src="/logo-final.png" alt="SkyLink" className="h-10 rounded-xl bg-white/10 p-2" />
             <h1 className="text-xl font-bold">Pilot Control Room</h1>
-            <Badge className="bg-green-500">Connected</Badge>
+            <Badge className={drone ? "bg-green-500" : "bg-yellow-500/40 text-yellow-200"}>
+              {drone ? `Linked · ${drone.droneId}` : "Waiting for drone"}
+            </Badge>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Battery className="h-4 w-4 text-green-500" />
-              <span className="text-sm font-mono">{battery}%</span>
+              <span className="text-sm font-mono">{drone?.battery ?? "--"}%</span>
             </div>
             <div className="flex items-center gap-2">
               <Radio className="h-4 w-4 text-primary" />
-              <span className="text-sm">GPS: Strong</span>
+              <span className="text-sm">
+                GPS: {drone ? `${drone.latitude.toFixed(2)},${drone.longitude.toFixed(2)}` : "acquiring"}
+              </span>
             </div>
             <Badge variant="secondary">AUTO MODE</Badge>
           </div>
@@ -70,9 +119,9 @@ export default function PilotControl() {
                 </div>
                 {/* HUD Overlays */}
                 <div className="absolute top-4 left-4 space-y-1 text-xs font-mono">
-                  <div className="bg-black/50 px-2 py-1 rounded">ALT: 120m</div>
-                  <div className="bg-black/50 px-2 py-1 rounded">SPD: 15 m/s</div>
-                  <div className="bg-black/50 px-2 py-1 rounded">HDG: 045°</div>
+                  <div className="bg-black/50 px-2 py-1 rounded">ALT: {drone?.altitude ?? 0}m</div>
+                  <div className="bg-black/50 px-2 py-1 rounded">SPD: {drone?.speed ?? 0} m/s</div>
+                  <div className="bg-black/50 px-2 py-1 rounded">HDG: {drone?.heading ?? 0}°</div>
                 </div>
                 <div className="absolute top-4 right-4">
                   <div className="bg-red-500/80 px-3 py-1 rounded text-xs font-bold animate-pulse">
@@ -168,15 +217,28 @@ export default function PilotControl() {
           <Card className="bg-gray-900 border-primary/20">
             <CardContent className="p-4 space-y-3">
               <h3 className="font-semibold mb-3">Emergency Controls</h3>
-              <Button variant="destructive" className="w-full">
+              <Button
+                variant="destructive"
+                className="w-full"
+                disabled={!drone || commandType === "PAUSE"}
+                onClick={() => handleCommand("PAUSE")}
+              >
                 <X className="mr-2 h-4 w-4" />
                 Emergency Brake
               </Button>
-              <Button className="w-full bg-amber-600 hover:bg-amber-700">
+              <Button
+                className="w-full bg-amber-600 hover:bg-amber-700"
+                disabled={!drone || commandType === "RETURN_TO_BASE"}
+                onClick={() => handleCommand("RETURN_TO_BASE")}
+              >
                 <Home className="mr-2 h-4 w-4" />
                 Return to Home
               </Button>
-              <Button className="w-full bg-green-600 hover:bg-green-700">
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={!drone || commandType === "LAND"}
+                onClick={() => handleCommand("LAND")}
+              >
                 Land Now
               </Button>
             </CardContent>
@@ -212,24 +274,58 @@ export default function PilotControl() {
           </Card>
 
           <Card className="bg-gray-900 border-primary/20">
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Joystick Link</h3>
+                <Badge variant="outline" className="text-xs">
+                  {gamepad.connected ? gamepad.id || "Controller detected" : "No controller"}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm text-white/80">
+                {["Roll", "Pitch", "Yaw", "Throttle"].map((label, idx) => (
+                  <div key={label} className="rounded-xl border border-white/10 px-3 py-2 bg-black/30">
+                    <p className="text-white/60 text-xs uppercase tracking-[0.3em]">{label}</p>
+                    <p className="font-mono text-lg">{(gamepad.axes[idx] ?? 0).toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+              <Button
+                className={manualMode ? "w-full bg-white text-black hover:bg-white/80" : "w-full bg-primary/60"}
+                disabled={!drone || !gamepad.connected}
+                onClick={() => setManualMode((prev) => !prev)}
+              >
+                {manualMode ? "Disable Manual Override" : "Enable Manual Override"}
+              </Button>
+              <p className="text-xs text-white/60">
+                {gamepad.connected
+                  ? "Axes stream every 200ms when override is active."
+                  : "Connect a USB/Bluetooth joystick to activate manual control."}
+              </p>
+              {manualError && <p className="text-xs text-red-400">{manualError}</p>}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900 border-primary/20">
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3">Flight Stats</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Flight Time:</span>
-                  <span className="font-mono">12:34</span>
+                  <span className="text-muted-foreground">Altitude:</span>
+                  <span className="font-mono">{drone?.altitude ?? 0} m</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Distance:</span>
-                  <span className="font-mono">2.4 km</span>
+                  <span className="text-muted-foreground">Speed:</span>
+                  <span className="font-mono">{drone?.speed ?? 0} m/s</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Max Speed:</span>
-                  <span className="font-mono">18 m/s</span>
+                  <span className="text-muted-foreground">Heading:</span>
+                  <span className="font-mono">{drone?.heading ?? 0}°</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Packets Lost:</span>
-                  <span className="font-mono text-green-500">0</span>
+                  <span className="text-muted-foreground">Signal:</span>
+                  <span className="font-mono text-green-500">
+                    {typeof drone?.signalQuality === "number" ? `${drone.signalQuality}%` : "--"}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -238,4 +334,16 @@ export default function PilotControl() {
       </div>
     </div>
   );
+  function handleCommand(type: "RETURN_TO_BASE" | "PAUSE" | "LAND" | "RESUME") {
+    if (!drone) {
+      toast.error("No drone connected");
+      return;
+    }
+    setCommandType(type);
+    coreApi
+      .sendCommand({ droneId: drone.droneId, type })
+      .then(() => toast.success("Command sent"))
+      .catch((error) => toast.error(error?.message || "Failed"))
+      .finally(() => setCommandType(null));
+  }
 }

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, MapPin, Package, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { coreApi } from "@/lib/api";
 
 export default function CreateDelivery() {
   const { user } = useAuth();
@@ -48,10 +49,23 @@ export default function CreateDelivery() {
 
       if (error) throw error;
 
-      toast.success("Delivery request created!");
+      try {
+        await coreApi.createMission({
+          clientName: user.user_metadata?.full_name || user.email || "Client",
+          pickup: formData.pickupLocation,
+          dropoff: formData.dropoffLocation,
+          priority: "express",
+          packageDetails: `${formData.packageWeight || "?"}kg • ${formData.packageSize || "N/A"}`,
+          etaMinutes: 12,
+        });
+      } catch (apiError: any) {
+        console.warn("Core server not reachable:", apiError?.message);
+      }
+
+      toast.success("Request sent");
       navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create delivery");
+      toast.error(error.message || "Couldn't create request");
     } finally {
       setLoading(false);
     }
@@ -69,7 +83,13 @@ export default function CreateDelivery() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-bold">Create Delivery</h1>
+          <div className="flex items-center gap-3">
+            <img src="/logo-final.png" alt="SkyLink" className="h-10 rounded-xl bg-white/10 p-2" />
+            <div>
+              <h1 className="text-xl font-bold">Create Delivery</h1>
+              <p className="text-white/70 text-sm">Operations HQ · Dakar, Senegal</p>
+            </div>
+          </div>
         </div>
       </header>
 
