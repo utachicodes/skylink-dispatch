@@ -17,16 +17,38 @@ export default function RoleSelection() {
     
     setLoading(true);
     try {
+      // Use upsert to handle both insert and update cases
+      // This will insert if no role exists, or update if one does
       const { error } = await supabase
         .from("user_roles")
-        .insert({ user_id: user.id, role });
+        .upsert(
+          { user_id: user.id, role },
+          { onConflict: "user_id,role" }
+        );
 
-      if (error) throw error;
+      if (error) {
+        // If upsert fails, try insert (in case user has no role)
+        const { error: insertError } = await supabase
+          .from("user_roles")
+          .insert({ user_id: user.id, role });
+        
+        if (insertError) {
+          // If insert also fails, try update (in case user already has a role)
+          const { error: updateError } = await supabase
+            .from("user_roles")
+            .update({ role })
+            .eq("user_id", user.id);
+          
+          if (updateError) throw updateError;
+        }
+      }
 
       toast.success(`Welcome ${role}!`);
-      navigate(role === "client" ? "/dashboard" : "/operator");
+      // Reload the page to refresh auth context
+      window.location.href = role === "client" ? "/dashboard" : "/operator";
     } catch (error: any) {
-      toast.error(error.message || "Failed to set role");
+      console.error("Role selection error:", error);
+      toast.error(error.message || "Failed to set role. Please contact support.");
     } finally {
       setLoading(false);
     }
