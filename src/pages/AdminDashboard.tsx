@@ -3,12 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Plane, Package, Activity, Settings, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
+import { Users, Plane, Package, Activity, Settings, DollarSign, TrendingUp, AlertCircle, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { coreApi } from "@/lib/api";
 import { LiveMap } from "@/components/LiveMap";
 import { DroneManager } from "@/components/DroneManager";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Stats {
   totalUsers: number;
@@ -20,6 +21,7 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
+  const { user, signOut } = useAuth();
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     activeDrones: 0,
@@ -95,13 +97,29 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 mb-2">
             <img src="/logo-final.png" alt="SkyLink" className="h-12 animate-logo-glow" />
             <div>
               <h1 className="text-3xl font-bold">Admin Dashboard</h1>
               <p className="text-white/90 mt-1">System overview and management</p>
             </div>
+          </div>
+          <div className="hidden md:flex items-center gap-3 text-sm">
+            {user && (
+              <span className="text-white/80 truncate max-w-[220px]">
+                {user.email}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/80 hover:bg-white/10"
+              onClick={signOut}
+            >
+              <LogOut className="h-3 w-3 mr-1" />
+              Logout
+            </Button>
           </div>
         </div>
       </header>

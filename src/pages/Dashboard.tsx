@@ -2,7 +2,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Package, MapPin, Clock, Plus, Loader2 } from "lucide-react";
+import { Package, MapPin, Clock, Plus, Loader2, LogOut, Repeat2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDeliveries } from "@/hooks/useDeliveries";
@@ -10,7 +10,7 @@ import { format } from "date-fns";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user, userRole } = useAuth();
+  const { user, userRole, signOut } = useAuth();
   const { deliveries, loading } = useDeliveries(user?.id, userRole);
 
   const activeDeliveries = deliveries.filter(d => 
@@ -44,11 +44,38 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
-        <div className="flex items-center gap-4">
-          <img src="/logo-final.png" alt="SkyLink" className="h-12 rounded-2xl bg-white/10 p-2" />
-          <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p className="text-white/90 mt-1">Welcome to SkyLink</p>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <img src="/logo-final.png" alt="SkyLink" className="h-12 rounded-2xl bg-white/10 p-2" />
+            <div>
+              <h1 className="text-2xl font-bold">Dashboard</h1>
+              <p className="text-white/90 mt-1">Welcome to SkyLink</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-3 text-sm">
+            {user && (
+              <span className="text-white/80">
+                {user.email}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-white/20 text-white/90 bg-white/10 hover:bg-white/20"
+              onClick={() => navigate("/select-role")}
+            >
+              <Repeat2 className="h-3 w-3 mr-1" />
+              Switch role
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/80 hover:bg-white/10"
+              onClick={signOut}
+            >
+              <LogOut className="h-3 w-3 mr-1" />
+              Logout
+            </Button>
           </div>
         </div>
       </header>

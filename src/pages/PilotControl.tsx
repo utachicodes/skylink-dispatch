@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { useTelemetry } from "@/hooks/useTelemetry";
 import { coreApi } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { VideoStream } from "@/components/VideoStream";
 import { useGamepad } from "@/hooks/useGamepad";
@@ -28,6 +29,7 @@ import { LiveMap } from "@/components/LiveMap";
 export default function PilotControl() {
   const { missionId, deliveryId } = useParams<{ missionId?: string; deliveryId?: string }>();
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { frames } = useTelemetry();
   const [commandType, setCommandType] = useState<string | null>(null);
   const [manualMode, setManualMode] = useState(false);
@@ -113,7 +115,7 @@ export default function PilotControl() {
     <div className="min-h-screen bg-black text-white">
       {/* Header HUD */}
       <div className="bg-black/90 backdrop-blur-sm p-4 border-b border-primary/20">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -146,6 +148,15 @@ export default function PilotControl() {
               </span>
             </div>
             <Badge variant="secondary">AUTO MODE</Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-4 text-white/80 hover:bg-white/10"
+              onClick={signOut}
+            >
+              <X className="h-3 w-3 mr-1" />
+              Logout
+            </Button>
           </div>
         </div>
       </div>

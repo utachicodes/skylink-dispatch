@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, MapPin, Clock, Check, X, DollarSign, TrendingUp } from "lucide-react";
+import { Package, MapPin, Clock, Check, X, DollarSign, TrendingUp, LogOut, Repeat2 } from "lucide-react";
 import { deliveryService } from "@/lib/deliveryService";
 import { coreApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function OperatorDashboard() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
@@ -121,11 +121,38 @@ export default function OperatorDashboard() {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
-        <div className="flex items-center gap-4">
-          <img src="/logo-final.png" alt="SkyLink" className="h-12 rounded-2xl bg-white/10 p-2" />
-          <div>
-            <h1 className="text-2xl font-bold">Operator Dashboard</h1>
-            <p className="text-white/90 mt-1">Semi-autonomous requests streaming live</p>
+        <div className="flex items-center justify-between gap-4 max-w-4xl mx-auto">
+          <div className="flex items-center gap-4">
+            <img src="/logo-final.png" alt="SkyLink" className="h-12 rounded-2xl bg-white/10 p-2" />
+            <div>
+              <h1 className="text-2xl font-bold">Operator Dashboard</h1>
+              <p className="text-white/90 mt-1">Semi-autonomous requests streaming live</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-3 text-sm">
+            {user && (
+              <span className="text-white/80 truncate max-w-[180px]">
+                {user.email}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-white/20 text-white/90 bg-white/10 hover:bg-white/20"
+              onClick={() => navigate("/select-role")}
+            >
+              <Repeat2 className="h-3 w-3 mr-1" />
+              Switch role
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/80 hover:bg-white/10"
+              onClick={signOut}
+            >
+              <LogOut className="h-3 w-3 mr-1" />
+              Logout
+            </Button>
           </div>
         </div>
       </header>
