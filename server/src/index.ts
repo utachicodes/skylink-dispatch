@@ -95,6 +95,37 @@ app.post("/api/commands", (req, res) => {
   }
 });
 
+// Video streaming endpoints
+app.get("/api/video/stream/:droneId", (req, res) => {
+  const { droneId } = req.params;
+  
+  // In production, this would proxy RTSP/WebRTC stream from the drone
+  // For now, return stream URL configuration
+  const videoUrl = process.env[`VIDEO_URL_${droneId}`] || 
+                   `rtsp://localhost:8554/${droneId}`;
+  
+  res.json({
+    droneId,
+    streamUrl: videoUrl,
+    type: "rtsp", // or "webrtc", "hls", etc.
+    status: "active"
+  });
+});
+
+app.get("/api/video/webrtc/:droneId", (req, res) => {
+  const { droneId } = req.params;
+  
+  // WebRTC signaling endpoint (simplified)
+  // In production, integrate with WebRTC server (Janus, Kurento, etc.)
+  res.json({
+    droneId,
+    sdpOffer: null, // Would contain WebRTC SDP
+    iceServers: [
+      { urls: "stun:stun.l.google.com:19302" }
+    ]
+  });
+});
+
 app.listen(port, () => {
   console.log(`[SkyLink Core] listening on port ${port}`);
 });

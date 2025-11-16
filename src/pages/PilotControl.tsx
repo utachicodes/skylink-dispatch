@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { useTelemetry } from "@/hooks/useTelemetry";
 import { coreApi } from "@/lib/api";
 import { toast } from "sonner";
+import { VideoStream } from "@/components/VideoStream";
 import { useGamepad } from "@/hooks/useGamepad";
 
 export default function PilotControl() {
@@ -106,28 +107,26 @@ export default function PilotControl() {
         <div className="md:col-span-2 space-y-4">
           <Card className="bg-gray-900 border-primary/20">
             <CardContent className="p-0">
-              <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-20">
-                  {[...Array(9)].map((_, i) => (
-                    <div key={i} className="border border-primary/30"></div>
-                  ))}
-                </div>
-                <div className="text-center z-10">
-                  <Video className="h-16 w-16 mx-auto mb-3 text-primary/50" />
-                  <p className="text-muted-foreground">Live Camera Feed</p>
-                  <p className="text-sm text-muted-foreground/60">Simulated view</p>
-                </div>
-                {/* HUD Overlays */}
-                <div className="absolute top-4 left-4 space-y-1 text-xs font-mono">
-                  <div className="bg-black/50 px-2 py-1 rounded">ALT: {drone?.altitude ?? 0}m</div>
-                  <div className="bg-black/50 px-2 py-1 rounded">SPD: {drone?.speed ?? 0} m/s</div>
-                  <div className="bg-black/50 px-2 py-1 rounded">HDG: {drone?.heading ?? 0}°</div>
-                </div>
-                <div className="absolute top-4 right-4">
-                  <div className="bg-red-500/80 px-3 py-1 rounded text-xs font-bold animate-pulse">
-                    REC
+              <div className="aspect-video relative overflow-hidden">
+                {drone ? (
+                  <>
+                    <VideoStream droneId={drone.droneId} className="w-full h-full" />
+                    {/* HUD Overlays */}
+                    <div className="absolute top-4 left-4 space-y-1 text-xs font-mono z-10">
+                      <div className="bg-black/70 px-2 py-1 rounded text-white">ALT: {drone.altitude.toFixed(0)}m</div>
+                      <div className="bg-black/70 px-2 py-1 rounded text-white">SPD: {drone.speed.toFixed(1)} m/s</div>
+                      <div className="bg-black/70 px-2 py-1 rounded text-white">HDG: {drone.heading.toFixed(0)}°</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                    <div className="text-center text-white/60">
+                      <Video className="h-16 w-16 mx-auto mb-3 text-primary/50" />
+                      <p className="text-muted-foreground">Waiting for drone connection</p>
+                      <p className="text-sm text-muted-foreground/60">Video feed will appear here</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>

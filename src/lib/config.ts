@@ -14,5 +14,9 @@ export const api = {
     stream: () => `${CORE_API_URL}/api/telemetry/stream`,
   },
   commands: () => `${CORE_API_URL}/api/commands`,
+  video: {
+    stream: (droneId: string) => `${CORE_API_URL}/api/video/stream/${droneId}`,
+    webrtc: (droneId: string) => `${CORE_API_URL}/api/video/webrtc/${droneId}`,
+  },
 };
 
