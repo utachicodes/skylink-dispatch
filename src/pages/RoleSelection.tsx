@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plane, Package, Loader2 } from "lucide-react";
+import { Users, RadioTower, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -70,7 +70,7 @@ export default function RoleSelection() {
           <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all">
             <CardHeader>
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-                <Package className="h-6 w-6 text-primary" />
+                <Users className="h-6 w-6 text-primary" />
               </div>
               <CardTitle className="text-white">I'm a Client</CardTitle>
               <CardDescription className="text-white/70">
@@ -97,7 +97,7 @@ export default function RoleSelection() {
           <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all">
             <CardHeader>
               <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
-                <Plane className="h-6 w-6 text-accent" />
+                <RadioTower className="h-6 w-6 text-accent" />
               </div>
               <CardTitle className="text-white">I'm an Operator</CardTitle>
               <CardDescription className="text-white/70">
