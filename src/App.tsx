@@ -39,7 +39,9 @@ const App = () => (
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
             <Route path="/operator" element={<ProtectedRoute allowedRoles={["operator"]}><OperatorDashboard /></ProtectedRoute>} />
-            <Route path="/pilot/:deliveryId" element={<ProtectedRoute allowedRoles={["operator"]}><PilotControl /></ProtectedRoute>} />
+            <Route path="/pilot/mission/:missionId" element={<ProtectedRoute allowedRoles={["operator"]}><PilotControl /></ProtectedRoute>} />
+            <Route path="/pilot/delivery/:deliveryId" element={<ProtectedRoute allowedRoles={["operator"]}><PilotControl /></ProtectedRoute>} />
+            <Route path="/pilot/:missionId" element={<ProtectedRoute allowedRoles={["operator"]}><PilotControl /></ProtectedRoute>} />
             
             <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
             

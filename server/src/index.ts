@@ -49,11 +49,32 @@ app.post("/api/missions/:id/assign", (req, res) => {
   res.json(mission);
 });
 
-app.post("/api/missions/:id/status", (req, res) => {
+app.post("/api/missions/:id/status", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body as { status: string };
   const mission = missionStore.updateStatus(id, status as any);
   if (!mission) return res.status(404).json({ error: "mission not found" });
+  
+  // If mission is completed and has an operator, create earnings record
+  if (status === "completed" && mission.operatorId) {
+    try {
+      // Calculate earnings (same logic as database trigger)
+      const baseRate = 10.0;
+      const sizeMultiplier = mission.packageDetails?.includes("large") ? 2.0 : 
+                            mission.packageDetails?.includes("small") ? 1.0 : 1.5;
+      const weightMatch = mission.packageDetails?.match(/(\d+(?:\.\d+)?)kg/);
+      const weight = weightMatch ? parseFloat(weightMatch[1]) : 2;
+      const weightMultiplier = Math.max(1.0, weight / 2.0);
+      const amount = baseRate * sizeMultiplier * weightMultiplier;
+      
+      // Note: In production, this would insert into Supabase operator_earnings table
+      // For now, we just log it. The frontend can handle creating the earnings record.
+      console.log(`[Mission ${id}] Earnings calculated: $${amount.toFixed(2)} for operator ${mission.operatorId}`);
+    } catch (error) {
+      console.error("[Mission] Failed to calculate earnings", error);
+    }
+  }
+  
   res.json(mission);
 });
 
@@ -124,6 +145,62 @@ app.get("/api/video/webrtc/:droneId", (req, res) => {
       { urls: "stun:stun.l.google.com:19302" }
     ]
   });
+});
+
+// Payment endpoints
+app.post("/api/payments/create-intent", async (req, res) => {
+  try {
+    const { amount, missionId } = req.body;
+    
+    if (!amount || !missionId) {
+      return res.status(400).json({ error: "amount and missionId are required" });
+    }
+
+    // In production, use Stripe SDK
+    // For now, return a mock client secret
+    const stripe = (await import("stripe")).default;
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    
+    if (!stripeKey) {
+      // Mock payment intent for development
+      return res.json({
+        clientSecret: "mock_client_secret_" + Date.now(),
+        amount,
+        missionId,
+      });
+    }
+
+    const stripeClient = new stripe(stripeKey, { apiVersion: "2024-11-20.acacia" });
+    const paymentIntent = await stripeClient.paymentIntents.create({
+      amount: Math.round(amount),
+      currency: "usd",
+      metadata: { missionId },
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      amount,
+      missionId,
+    });
+  } catch (error: any) {
+    console.error("[Payment] Failed to create intent:", error);
+    res.status(500).json({ error: error.message || "Payment processing failed" });
+  }
+});
+
+app.post("/api/payments/confirm", async (req, res) => {
+  try {
+    const { paymentIntentId, missionId } = req.body;
+    
+    // Update mission status to confirmed after payment
+    if (missionId) {
+      missionStore.updateStatus(missionId, "confirmed");
+    }
+    
+    res.json({ status: "confirmed", missionId });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || "Payment confirmation failed" });
+  }
 });
 
 app.listen(port, () => {

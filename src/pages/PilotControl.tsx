@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,19 +19,61 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useTelemetry } from "@/hooks/useTelemetry";
 import { coreApi } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VideoStream } from "@/components/VideoStream";
 import { useGamepad } from "@/hooks/useGamepad";
+import { LiveMap } from "@/components/LiveMap";
 
 export default function PilotControl() {
+  const { missionId, deliveryId } = useParams<{ missionId?: string; deliveryId?: string }>();
   const navigate = useNavigate();
   const { frames } = useTelemetry();
   const [commandType, setCommandType] = useState<string | null>(null);
   const [manualMode, setManualMode] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+  const [mission, setMission] = useState<any>(null);
   const drone = useMemo(() => frames[0], [frames]);
   const gamepad = useGamepad();
   const axesRef = useRef<number[]>(gamepad.axes);
+
+  // Load mission/delivery data
+  useEffect(() => {
+    const loadMission = async () => {
+      if (missionId) {
+        try {
+          // Try active missions first, then all missions
+          const activeMissions = await coreApi.listActiveMissions();
+          let found = activeMissions.find((m) => m.id === missionId);
+          
+          if (!found) {
+            // Try all missions if not in active
+            const allMissions = await coreApi.listMissions();
+            found = allMissions.find((m) => m.id === missionId);
+          }
+          
+          if (found) setMission(found);
+        } catch (error) {
+          console.error("Failed to load mission", error);
+        }
+      } else if (deliveryId) {
+        // Load delivery data if needed
+        try {
+          const { data } = await supabase
+            .from("deliveries")
+            .select("*")
+            .eq("id", deliveryId)
+            .single();
+          if (data) {
+            setMission({ ...data, type: "delivery" });
+          }
+        } catch (error) {
+          console.error("Failed to load delivery", error);
+        }
+      }
+    };
+    loadMission();
+  }, [missionId, deliveryId]);
 
   useEffect(() => {
     axesRef.current = gamepad.axes;
@@ -82,6 +125,11 @@ export default function PilotControl() {
             </Button>
             <img src="/logo-final.png" alt="SkyLink" className="h-10 rounded-xl bg-white/10 p-2" />
             <h1 className="text-xl font-bold">Pilot Control Room</h1>
+            {mission && (
+              <Badge variant="outline" className="text-white border-white/30">
+                Mission #{mission.id.slice(0, 8)}
+              </Badge>
+            )}
             <Badge className={drone ? "bg-green-500" : "bg-yellow-500/40 text-yellow-200"}>
               {drone ? `Linked · ${drone.droneId}` : "Waiting for drone"}
             </Badge>
@@ -127,6 +175,16 @@ export default function PilotControl() {
                     </div>
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Live Map */}
+          <Card className="bg-gray-900 border-primary/20">
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold mb-3">Live Tracking Map</h3>
+              <div className="h-64 rounded-lg overflow-hidden">
+                <LiveMap height="100%" showControls={false} />
               </div>
             </CardContent>
           </Card>
@@ -333,6 +391,7 @@ export default function PilotControl() {
       </div>
     </div>
   );
+
   function handleCommand(type: "RETURN_TO_BASE" | "PAUSE" | "LAND" | "RESUME") {
     if (!drone) {
       toast.error("No drone connected");

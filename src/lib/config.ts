@@ -18,5 +18,9 @@ export const api = {
     stream: (droneId: string) => `${CORE_API_URL}/api/video/stream/${droneId}`,
     webrtc: (droneId: string) => `${CORE_API_URL}/api/video/webrtc/${droneId}`,
   },
+  payments: {
+    createIntent: () => `${CORE_API_URL}/api/payments/create-intent`,
+    confirm: () => `${CORE_API_URL}/api/payments/confirm`,
+  },
 };
 

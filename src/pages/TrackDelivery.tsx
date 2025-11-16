@@ -8,6 +8,7 @@ import { MapPin, ArrowLeft, Loader2 } from "lucide-react";
 import { deliveryService } from "@/lib/deliveryService";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { LiveMap } from "@/components/LiveMap";
 
 export default function TrackDelivery() {
   const { id } = useParams();
@@ -35,8 +36,61 @@ export default function TrackDelivery() {
         </div>
       </header>
       <main className="p-4 space-y-6 max-w-4xl mx-auto">
-        <Card className="h-96 bg-muted/30"><CardContent className="p-0 h-full flex items-center justify-center"><div className="text-center"><MapPin className="h-12 w-12 mx-auto mb-3 text-primary" /><p className="font-medium">Map Integration</p></div></CardContent></Card>
-        <Card><CardHeader><div className="flex justify-between"><CardTitle>Delivery Status</CardTitle><Badge className="bg-primary text-white">{delivery.status.toUpperCase()}</Badge></div></CardHeader><CardContent><div className="space-y-3"><div><p className="text-sm text-muted-foreground">Pickup</p><p className="font-medium">{delivery.pickup_location}</p></div><div><p className="text-sm text-muted-foreground">Drop-off</p><p className="font-medium">{delivery.dropoff_location}</p></div><div><p className="text-sm text-muted-foreground">Created</p><p className="font-medium">{format(new Date(delivery.created_at), "MMM d, h:mm a")}</p></div></div></CardContent></Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Live Drone Tracking</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="h-96 rounded-lg overflow-hidden">
+              <LiveMap 
+                height="100%" 
+                showControls={true}
+                center={delivery.pickup_lat && delivery.pickup_lng ? [delivery.pickup_lat, delivery.pickup_lng] : undefined}
+                zoom={13}
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between">
+              <CardTitle>Delivery Status</CardTitle>
+              <Badge className="bg-primary text-white">{delivery.status.toUpperCase()}</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Pickup</p>
+                <p className="font-medium">{delivery.pickup_location}</p>
+                {delivery.pickup_lat && delivery.pickup_lng && (
+                  <p className="text-xs text-muted-foreground">
+                    {delivery.pickup_lat.toFixed(4)}, {delivery.pickup_lng.toFixed(4)}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Drop-off</p>
+                <p className="font-medium">{delivery.dropoff_location}</p>
+                {delivery.dropoff_lat && delivery.dropoff_lng && (
+                  <p className="text-xs text-muted-foreground">
+                    {delivery.dropoff_lat.toFixed(4)}, {delivery.dropoff_lng.toFixed(4)}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Created</p>
+                <p className="font-medium">{format(new Date(delivery.created_at), "MMM d, h:mm a")}</p>
+              </div>
+              {delivery.estimated_time && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Estimated Time</p>
+                  <p className="font-medium">{delivery.estimated_time} minutes</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </main>
       <BottomNav />
     </div>

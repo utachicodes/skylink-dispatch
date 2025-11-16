@@ -11,11 +11,17 @@ import { ArrowLeft, Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { deliveryService } from "@/lib/deliveryService";
+import { PaymentForm } from "@/components/PaymentForm";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { coreApi } from "@/lib/api";
 
 export default function CreateDelivery() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [missionId, setMissionId] = useState<string | null>(null);
+  const [estimatedAmount, setEstimatedAmount] = useState(15);
   const [formData, setFormData] = useState({
     pickup_location: "",
     dropoff_location: "",
@@ -30,7 +36,28 @@ export default function CreateDelivery() {
 
     setLoading(true);
     try {
-      const delivery = await deliveryService.createDelivery({
+      // Calculate estimated cost based on distance and package size
+      const baseCost = 10;
+      const sizeMultiplier = formData.package_size === "small" ? 1 : formData.package_size === "medium" ? 1.5 : 2;
+      const weight = formData.package_weight ? parseFloat(formData.package_weight) : 2;
+      const weightMultiplier = Math.max(1, weight / 2);
+      const estimatedCost = Math.round((baseCost * sizeMultiplier * weightMultiplier) * 100) / 100;
+      setEstimatedAmount(estimatedCost);
+
+      // Create mission in core API
+      const mission = await coreApi.createMission({
+        clientName: user.user_metadata?.full_name || user.email || "Client",
+        pickup: formData.pickup_location,
+        dropoff: formData.dropoff_location,
+        priority: "standard",
+        packageDetails: `${formData.package_weight || "?"}kg • ${formData.package_size}`,
+        etaMinutes: 15,
+      });
+
+      setMissionId(mission.id);
+      
+      // Also create delivery in Supabase
+      await deliveryService.createDelivery({
         client_id: user.id,
         pickup_location: formData.pickup_location,
         dropoff_location: formData.dropoff_location,
@@ -44,13 +71,22 @@ export default function CreateDelivery() {
         status: "pending",
       });
 
-      toast.success("Delivery request created!");
-      navigate(`/track/${delivery.id}`);
+      setShowPayment(true);
+      toast.success("Mission created! Please complete payment.");
     } catch (error: any) {
       toast.error(error.message || "Failed to create delivery");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPayment(false);
+    toast.success("Payment completed! Mission confirmed.");
+    if (missionId) {
+      coreApi.updateMissionStatus(missionId, "confirmed");
+    }
+    navigate("/dashboard");
   };
 
   return (
@@ -124,6 +160,23 @@ export default function CreateDelivery() {
       </main>
 
       <BottomNav />
+
+      <Dialog open={showPayment} onOpenChange={setShowPayment}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Complete Payment</DialogTitle>
+            <DialogDescription>Pay to confirm your delivery mission</DialogDescription>
+          </DialogHeader>
+          {missionId && (
+            <PaymentForm
+              amount={estimatedAmount}
+              missionId={missionId}
+              onSuccess={handlePaymentSuccess}
+              onCancel={() => setShowPayment(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
