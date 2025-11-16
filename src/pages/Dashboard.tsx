@@ -46,7 +46,13 @@ export default function Dashboard() {
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img src="/logo-final.png" alt="SkyLink" className="h-12 rounded-2xl bg-white/10 p-2" />
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="focus:outline-none rounded-2xl bg-white/10 p-2"
+            >
+              <img src="/logo-final.png" alt="SkyLink" className="h-12" />
+            </button>
             <div>
               <h1 className="text-2xl font-bold">Dashboard</h1>
               <p className="text-white/90 mt-1">Welcome to SkyLink</p>
@@ -139,7 +145,20 @@ export default function Dashboard() {
                     <p>Start by creating a new delivery request</p>
                   </div>
                 ) : (
-                  deliveries.slice(0, 5).map((delivery) => (
+                  deliveries.slice(0, 5).map((delivery) => {
+                    const hasOperator = !!delivery.operator_id;
+                    const operatorLabel =
+                      !hasOperator && delivery.status === "pending"
+                        ? "Looking for an available operator"
+                        : hasOperator && delivery.status === "confirmed"
+                        ? "Operator assigned – waiting to launch"
+                        : hasOperator && ["in_flight", "arrived"].includes(delivery.status)
+                        ? "Operator is flying this mission"
+                        : hasOperator && delivery.status === "delivered"
+                        ? "Completed by operator"
+                        : "Status updating";
+
+                    return (
                     <div
                       key={delivery.id}
                       className="p-4 border rounded-lg space-y-3 cursor-pointer hover:bg-accent/5 transition-colors"
@@ -162,13 +181,19 @@ export default function Dashboard() {
                             <p className="text-muted-foreground truncate">To: {delivery.dropoff_location}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span>{format(new Date(delivery.created_at), "MMM d, h:mm a")}</span>
+                        <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            <span>{format(new Date(delivery.created_at), "MMM d, h:mm a")}</span>
+                          </div>
+                          <span className="text-sky-200">
+                            {operatorLabel}
+                          </span>
                         </div>
                       </div>
                     </div>
-                  ))
+                    );
+                  })
                 )}
               </CardContent>
             </Card>

@@ -125,7 +125,13 @@ export default function PilotControl() {
             >
               <X className="h-5 w-5" />
             </Button>
-            <img src="/logo-final.png" alt="SkyLink" className="h-10 rounded-xl bg-white/10 p-2" />
+            <button
+              type="button"
+              onClick={() => navigate("/operator")}
+              className="focus:outline-none rounded-xl bg-white/10 p-2"
+            >
+              <img src="/logo-final.png" alt="SkyLink" className="h-10" />
+            </button>
             <h1 className="text-xl font-bold">Pilot Control Room</h1>
             {mission && (
               <Badge variant="outline" className="text-white border-sky-400/60">

@@ -123,7 +123,13 @@ export default function OperatorDashboard() {
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
         <div className="flex items-center justify-between gap-4 max-w-4xl mx-auto">
           <div className="flex items-center gap-4">
-            <img src="/logo-final.png" alt="SkyLink" className="h-12 rounded-2xl bg-white/10 p-2" />
+            <button
+              type="button"
+              onClick={() => navigate("/operator")}
+              className="focus:outline-none rounded-2xl bg-white/10 p-2"
+            >
+              <img src="/logo-final.png" alt="SkyLink" className="h-12" />
+            </button>
             <div>
               <h1 className="text-2xl font-bold">Operator Dashboard</h1>
               <p className="text-white/90 mt-1">Semi-autonomous requests streaming live</p>

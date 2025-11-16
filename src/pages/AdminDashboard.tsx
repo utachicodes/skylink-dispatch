@@ -99,7 +99,13 @@ export default function AdminDashboard() {
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 mb-2">
-            <img src="/logo-final.png" alt="SkyLink" className="h-12 animate-logo-glow" />
+            <button
+              type="button"
+              onClick={() => window.location.href = "/admin"}
+              className="focus:outline-none"
+            >
+              <img src="/logo-final.png" alt="SkyLink" className="h-12 animate-logo-glow" />
+            </button>
             <div>
               <h1 className="text-3xl font-bold">Admin Dashboard</h1>
               <p className="text-white/90 mt-1">System overview and management</p>

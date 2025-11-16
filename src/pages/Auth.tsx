@@ -68,14 +68,20 @@ export default function Auth() {
       <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
         <section className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-16 py-14 flex flex-col justify-between gap-10">
           <div className="space-y-8">
-            <img src="/logo-final.png" alt="SkyLink" className="h-16 animate-logo-glow" />
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="focus:outline-none"
+            >
+              <img src="/logo-final.png" alt="SkyLink" className="h-16 animate-logo-glow" />
+            </button>
             <div className="space-y-4">
-              <p className="text-sm uppercase tracking-[0.4em] text-white/60">Dakar mission control</p>
+              <p className="text-sm uppercase tracking-[0.4em] text-white/60">Senegal mission control</p>
               <h1 className="text-4xl lg:text-5xl font-semibold leading-tight">
                 Drones for hard-to-reach places
               </h1>
               <p className="text-white/70 text-lg">
-                Based in Dakar. Fire crews, hospitals, restaurants, and delivery teams use SkyLink. Operators log in from anywhere and start earning.
+                Based in Senegal. Fire crews, hospitals, restaurants, and delivery teams use SkyLink. Operators log in from anywhere and start earning.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
