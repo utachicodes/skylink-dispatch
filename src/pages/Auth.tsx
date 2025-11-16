@@ -20,7 +20,7 @@ export default function Auth() {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      navigate("/select-role");
     }
   }, [user, navigate]);
 
@@ -37,7 +37,6 @@ export default function Auth() {
 
         if (error) throw error;
         toast.success("Signed in");
-        navigate("/dashboard");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -53,7 +52,6 @@ export default function Auth() {
 
         if (error) throw error;
         toast.success("Account created");
-        navigate("/dashboard");
       }
     } catch (error: any) {
       toast.error(error.message || "Couldn't sign in");
