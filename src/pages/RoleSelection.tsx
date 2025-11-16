@@ -29,9 +29,9 @@ export default function RoleSelection() {
       if (error) {
         // If upsert fails, try insert (in case user has no role)
         const { error: insertError } = await supabase
-          .from("user_roles")
-          .insert({ user_id: user.id, role });
-        
+        .from("user_roles")
+        .insert({ user_id: user.id, role });
+
         if (insertError) {
           // If insert also fails, try update (in case user already has a role)
           const { error: updateError } = await supabase

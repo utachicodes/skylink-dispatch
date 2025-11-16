@@ -49,7 +49,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => navigate("/dashboard")}
-              className="focus:outline-none rounded-2xl bg-white/10 p-2"
+              className="focus:outline-none"
             >
               <img src="/logo-final.png" alt="SkyLink" className="h-12" />
             </button>

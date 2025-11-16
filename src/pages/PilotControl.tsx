@@ -128,7 +128,7 @@ export default function PilotControl() {
             <button
               type="button"
               onClick={() => navigate("/operator")}
-              className="focus:outline-none rounded-xl bg-white/10 p-2"
+              className="focus:outline-none"
             >
               <img src="/logo-final.png" alt="SkyLink" className="h-10" />
             </button>
