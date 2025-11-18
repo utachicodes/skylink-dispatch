@@ -116,7 +116,7 @@ export default function PilotControl() {
     <div className="min-h-screen bg-black text-white">
       {/* Header HUD */}
       <div className="bg-black/90 backdrop-blur-sm p-4 border-b border-primary/20">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -182,16 +182,16 @@ export default function PilotControl() {
                       <div className="bg-black/70 px-2 py-1 rounded text-white">ALT: {drone.altitude.toFixed(0)}m</div>
                       <div className="bg-black/70 px-2 py-1 rounded text-white">SPD: {drone.speed.toFixed(1)} m/s</div>
                       <div className="bg-black/70 px-2 py-1 rounded text-white">HDG: {drone.heading.toFixed(0)}°</div>
-                    </div>
+                </div>
                   </>
                 ) : (
                   <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
                     <div className="text-center text-white/60">
-                      <Video className="h-16 w-16 mx-auto mb-3 text-primary/50" />
+                  <Video className="h-16 w-16 mx-auto mb-3 text-primary/50" />
                       <p className="text-muted-foreground">Waiting for drone connection</p>
                       <p className="text-sm text-muted-foreground/60">Video feed will appear here</p>
-                    </div>
                   </div>
+                </div>
                 )}
               </div>
             </CardContent>

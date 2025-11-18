@@ -106,29 +106,29 @@ const Index = () => {
                 </button>
                 <h1 className="text-4xl md:text-6xl font-semibold leading-tight text-white tracking-tight">
                   Drones for when roads don't cut it
-                </h1>
+            </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
                   Based in Senegal. Fire crews, hospitals, restaurants, and delivery teams use SkyLink to reach places vehicles can't. Operators log in from anywhere, get certified through the platform, and start earning.
-                </p>
+            </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    size="lg"
+              <Button
+                size="lg"
                     className="bg-gradient-to-r from-primary to-accent text-base font-semibold px-8 py-6"
-                    onClick={() => navigate("/auth")}
-                  >
+                onClick={() => navigate("/auth")}
+              >
                     Get started
                     <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
                     className="border-white/20 text-white/80 text-base px-8 py-6 backdrop-blur hover:bg-white/5"
-                    onClick={() => navigate("/auth")}
-                  >
+                onClick={() => navigate("/auth")}
+              >
                     Sign up as operator
-                  </Button>
-                </div>
-              </div>
+              </Button>
+            </div>
+          </div>
               <div className="flex-1 w-full">
                 <div className="grid gap-6 animate-float-slow">
                   {modes.map((mode) => (
@@ -174,7 +174,7 @@ const Index = () => {
                 <p className="text-sm uppercase tracking-[0.4em] text-white/50">Real missions</p>
                 <h2 className="text-3xl md:text-5xl font-semibold text-white mt-3">
                   When roads end, drones take over
-                </h2>
+          </h2>
               </div>
               <Button
                 variant="ghost"
@@ -199,7 +199,7 @@ const Index = () => {
                   <p className="text-muted-foreground">{feature.desc}</p>
                 </div>
               ))}
-            </div>
+              </div>
           </Reveal>
 
           <Reveal delayClass="delay-200">
@@ -208,24 +208,24 @@ const Index = () => {
                 <div className="flex-1 space-y-4">
                   <p className="text-sm uppercase tracking-[0.4em] text-white/60">How it works</p>
                   <h3 className="text-3xl font-semibold text-white">One platform, multiple industries</h3>
-                  <p className="text-muted-foreground">
+              <p className="text-muted-foreground">
                     Fire crews use it for recon. Hospitals ship blood. Restaurants deliver to islands. Police run facial detection. Everything logs automatically for compliance.
-                  </p>
+              </p>
                   <div className="flex flex-wrap gap-4">
                     <div className="flex items-center gap-2 text-white/80">
                       <RadioTower className="h-5 w-5 text-primary" />
                       24/7 monitored corridors
-                    </div>
+            </div>
                     <div className="flex items-center gap-2 text-white/80">
                       <Clock9 className="h-5 w-5 text-accent" />
                       Low-bandwidth fallback comms
-                    </div>
+              </div>
                     <div className="flex items-center gap-2 text-white/80">
                       <Package className="h-5 w-5 text-primary" />
                       Multi-package batching
-                    </div>
-                  </div>
-                </div>
+            </div>
+          </div>
+        </div>
                 <div className="flex-1 rounded-3xl border border-white/10 bg-black/30 p-6 space-y-4">
                   <div className="text-sm text-white/50 uppercase tracking-[0.4em]">Deployment modes</div>
                   {industries.map((industry) => (
@@ -246,15 +246,15 @@ const Index = () => {
                   <h3 className="text-2xl font-semibold text-white mt-2">Anyone can become an operator</h3>
                   <p className="text-white/70 mt-2">
                     Get certified through the platform. No degree needed. Fly missions from home, earn per delivery. SkyLink handles training, safety checks, and payouts.
-                  </p>
+          </p>
                 </div>
-                <Button
-                  size="lg"
+          <Button
+            size="lg"
                   className="bg-white text-black hover:bg-white/80 w-full md:w-auto"
-                  onClick={() => navigate("/auth")}
-                >
+            onClick={() => navigate("/auth")}
+          >
                   Start earning today
-                </Button>
+          </Button>
               </div>
             </div>
           </Reveal>
