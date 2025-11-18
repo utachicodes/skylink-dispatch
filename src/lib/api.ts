@@ -38,10 +38,50 @@ const handleResponse = async (res: Response) => {
 };
 
 const safeFetch = async <T>(url: string, options?: RequestInit, defaultValue?: T): Promise<T> => {
+  let timeoutId: NodeJS.Timeout | null = null;
   try {
-    const res = await fetch(url, options);
+    // Create abort controller for timeout (unless one is already provided)
+    const controller = options?.signal ? null : new AbortController();
+    if (controller) {
+      timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    }
+    
+    const res = await fetch(url, {
+      ...options,
+      signal: controller?.signal || options?.signal,
+    });
+    
+    if (timeoutId) clearTimeout(timeoutId);
+    
+    if (!res.ok) {
+      // If it's a 404, that's OK - just return empty/default
+      if (res.status === 404) {
+        console.warn(`[Core API] 404 on ${url} - returning default`);
+        if (defaultValue !== undefined) return defaultValue;
+        if (url.includes("/missions") || url.includes("/telemetry")) {
+          return [] as T;
+        }
+      }
+      // For other errors, try to parse the error message
+      const message = await res.text().catch(() => `HTTP ${res.status}`);
+      throw new Error(message || `Request failed with status ${res.status}`);
+    }
+    
     return await handleResponse(res) as T;
-  } catch (error) {
+  } catch (error: any) {
+    if (timeoutId) clearTimeout(timeoutId);
+    
+    // Network errors, CORS errors, timeouts, etc.
+    if (error.name === 'AbortError' || error.name === 'TypeError' || error.message?.includes('Failed to fetch')) {
+      console.warn(`[Core API] Network error on ${url} - this is OK if core API is not configured`, error.message);
+      if (defaultValue !== undefined) return defaultValue;
+      if (url.includes("/missions") || url.includes("/telemetry")) {
+        return [] as T;
+      }
+      // For non-list endpoints, still throw but with a clearer message
+      throw new Error(`Core API unavailable: ${error.message}`);
+    }
+    
     console.warn(`[Core API] Request failed: ${url}`, error);
     // Return default value if provided, otherwise empty array for list endpoints
     if (defaultValue !== undefined) {
