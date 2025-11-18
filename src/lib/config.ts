@@ -1,8 +1,8 @@
-// Use environment variable or default to production backend URL
-// Railway will provide a URL like: https://skylink-production.up.railway.app
-// Set VITE_CORE_API_URL in Vercel to override this default
+// Use environment variable or default to relative API path (same domain as frontend)
+// When deployed on Vercel, API routes are at /api/*
+// Set VITE_CORE_API_URL to override (e.g., for separate backend server)
 export const CORE_API_URL =
-  import.meta.env.VITE_CORE_API_URL || "https://skylink-production.up.railway.app";
+  import.meta.env.VITE_CORE_API_URL || "";
 
 // Log info about which API URL is being used
 if (import.meta.env.DEV) {
