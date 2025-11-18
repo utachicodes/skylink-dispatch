@@ -32,6 +32,7 @@ export type Database = {
           pickup_lat: number
           pickup_lng: number
           pickup_location: string
+          points_cost: number
           status: Database["public"]["Enums"]["delivery_status"]
           updated_at: string
         }
@@ -52,6 +53,7 @@ export type Database = {
           pickup_lat: number
           pickup_lng: number
           pickup_location: string
+          points_cost?: number
           status?: Database["public"]["Enums"]["delivery_status"]
           updated_at?: string
         }
@@ -72,6 +74,7 @@ export type Database = {
           pickup_lat?: number
           pickup_lng?: number
           pickup_location?: string
+          points_cost?: number
           status?: Database["public"]["Enums"]["delivery_status"]
           updated_at?: string
         }
@@ -253,6 +256,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          points: number
           updated_at: string
         }
         Insert: {
@@ -260,6 +264,7 @@ export type Database = {
           id: string
           name: string
           phone?: string | null
+          points?: number
           updated_at?: string
         }
         Update: {
@@ -267,6 +272,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          points?: number
           updated_at?: string
         }
         Relationships: []
@@ -305,6 +311,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_points: {
+        Args: { _points: number; _user_id: string }
+        Returns: undefined
+      }
+      deduct_points: {
+        Args: { _points: number; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

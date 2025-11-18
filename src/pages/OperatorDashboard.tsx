@@ -5,123 +5,157 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, MapPin, Clock, Check, X, DollarSign, TrendingUp, LogOut, Repeat2 } from "lucide-react";
+import { Package, MapPin, Clock, Check, X, Coins, LogOut } from "lucide-react";
 import { deliveryService } from "@/lib/deliveryService";
-import { coreApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function OperatorDashboard() {
-  const { user, signOut } = useAuth();
+  const { user, userRole, signOut } = useAuth();
   const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState<any[]>([]);
-  const [missions, setMissions] = useState<any[]>([]);
-  const [earnings, setEarnings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionId, setActionId] = useState<string | null>(null);
-
-  const refresh = async () => {
-    try {
-      // Fetch from both Supabase and Core API
-      const [deliveryData, missionData, earningsData] = await Promise.all([
-        deliveryService.getPendingDeliveries().catch(() => []),
-        coreApi.listActiveMissions().catch(() => []),
-        user ? supabase
-          .from("operator_earnings")
-          .select("*")
-          .eq("operator_id", user.id)
-          .order("created_at", { ascending: false })
-          .then(({ data, error }) => {
-            if (error && error.code !== "42P01") throw error; // Ignore "table doesn't exist" if migration not run
-            return data || [];
-          })
-          .catch(() => []) : Promise.resolve([]),
-      ]);
-      
-      setDeliveries(deliveryData || []);
-      setMissions(missionData || []);
-      setEarnings(earningsData || []);
-    } catch (error) {
-      console.warn("[OperatorDashboard] failed to fetch data", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    refresh();
-    const interval = setInterval(refresh, 10000);
-    return () => clearInterval(interval);
-  }, [user]);
+    if (!user || !userRole) return;
 
-  // Combine missions and deliveries for display
-  const allRequests = useMemo(() => {
-    const combined = [
-      ...missions.map((m) => ({ ...m, type: "mission", id: m.id })),
-      ...deliveries.map((d) => ({ ...d, type: "delivery", id: d.id })),
-    ];
-    return combined.filter((r) => ["pending", "confirmed", "assigned"].includes(r.status));
-  }, [missions, deliveries]);
+    const fetchData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("deliveries")
+          .select("*")
+          .eq("operator_id", user.id)
+          .order("created_at", { ascending: false });
 
-  const pending = allRequests;
+        if (error) {
+          console.error("Error fetching deliveries:", error);
+        } else {
+          setDeliveries(data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching deliveries:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, userRole]);
+
   const stats = useMemo(() => {
-    const active = deliveries.filter((d) => d.status === "in_flight").length;
     const completed = deliveries.filter((d) => d.status === "delivered").length;
-    const success = deliveries.length === 0 ? 100 : Math.round((completed / deliveries.length) * 100);
-    const totalEarnings = earnings.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-    const pendingEarnings = earnings.filter((e) => e.status === "pending").reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
-    return { active, completed, success, totalEarnings, pendingEarnings };
-  }, [deliveries, earnings]);
+    const active = deliveries.filter((d) => d.status === "in-transit").length;
+    const totalPoints = deliveries
+      .filter((d) => d.status === "delivered")
+      .reduce((sum, d) => sum + (d.points_cost || 0), 0);
 
-  const handleAccept = async (request: any) => {
+    return {
+      totalDeliveries: deliveries.length,
+      completed,
+      active,
+      pointsEarned: totalPoints,
+    };
+  }, [deliveries]);
+
+  const pendingDeliveries = deliveries.filter((d) => d.status === "pending" || d.status === "confirmed");
+  const activeDeliveries = deliveries.filter((d) => d.status === "in-transit");
+  const completedDeliveries = deliveries.filter((d) => d.status === "delivered");
+
+  const handleAccept = async (delivery: any) => {
     if (!user) return;
     try {
-      setActionId(request.id);
-      
-      if (request.type === "mission") {
-        // Accept mission from core API
-        await coreApi.assignMission(request.id, user.id);
-        toast.success("Mission accepted");
-        // Navigate to pilot control
-        navigate(`/pilot/mission/${request.id}`);
-      } else {
-        // Accept delivery from Supabase
-        await deliveryService.assignOperator(request.id, user.id);
-        toast.success("Delivery accepted");
-      }
-      
-      await refresh();
+      await deliveryService.assignOperator(delivery.id, user.id);
+      toast.success("Delivery accepted");
+      const { data: updated } = await supabase
+        .from("deliveries")
+        .select("*")
+        .eq("operator_id", user.id);
+      setDeliveries(updated || []);
     } catch (error: any) {
-      toast.error(error?.message || "Couldn't accept");
-    } finally {
-      setActionId(null);
+      toast.error(error?.message || "Failed to accept delivery");
     }
   };
 
-  const handleDecline = async (request: any) => {
-    try {
-      setActionId(request.id);
-      
-      if (request.type === "mission") {
-        await coreApi.updateMissionStatus(request.id, "cancelled");
-      } else {
-        await deliveryService.updateDeliveryStatus(request.id, "cancelled");
-      }
-      
-      toast("Request declined");
-      await refresh();
-    } catch (error: any) {
-      toast.error(error?.message || "Couldn't decline");
-    } finally {
-      setActionId(null);
-    }
+  const handleDecline = async (delivery: any) => {
+    toast.info("Delivery declined");
+    setDeliveries(prev => prev.filter(d => d.id !== delivery.id));
   };
+
+  const renderDeliveryCard = (delivery: any) => (
+    <Card key={delivery.id} className="hover:border-primary/50 transition-colors">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">Delivery #{delivery.id.substring(0, 8)}</CardTitle>
+          <Badge variant={
+            delivery.status === "delivered" ? "default" :
+            delivery.status === "in-transit" ? "secondary" :
+            "outline"
+          }>
+            {delivery.status}
+          </Badge>
+        </div>
+        <CardDescription className="flex items-center gap-2">
+          <Clock className="h-4 w-4" />
+          {new Date(delivery.created_at).toLocaleDateString()}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="space-y-2">
+          <div className="flex items-start gap-2">
+            <MapPin className="h-4 w-4 text-green-500 mt-1" />
+            <div>
+              <p className="text-sm font-medium">Pickup</p>
+              <p className="text-sm text-muted-foreground">{delivery.pickup_location}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <MapPin className="h-4 w-4 text-red-500 mt-1" />
+            <div>
+              <p className="text-sm font-medium">Dropoff</p>
+              <p className="text-sm text-muted-foreground">{delivery.dropoff_location}</p>
+            </div>
+          </div>
+        </div>
+        
+        {delivery.package_note && (
+          <div className="p-2 bg-muted/50 rounded-lg">
+            <p className="text-xs text-muted-foreground">{delivery.package_note}</p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-1 text-primary">
+            <Coins className="h-4 w-4" />
+            <span className="font-semibold">{delivery.points_cost || 100} pts</span>
+          </div>
+          
+          {delivery.status === "pending" && (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleDecline(delivery)}>
+                <X className="h-4 w-4" />
+              </Button>
+              <Button size="sm" onClick={() => handleAccept(delivery)}>
+                <Check className="h-4 w-4 mr-1" />
+                Accept
+              </Button>
+            </div>
+          )}
+          
+          {delivery.status === "in-transit" && (
+            <Button size="sm" onClick={() => navigate(`/pilot/delivery/${delivery.id}`)}>
+              View Control
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
-        <div className="flex items-center justify-between gap-4 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -132,205 +166,84 @@ export default function OperatorDashboard() {
             </button>
             <div>
               <h1 className="text-2xl font-bold">Operator Dashboard</h1>
-              <p className="text-white/90 mt-1">Semi-autonomous requests streaming live</p>
+              <p className="text-white/90 mt-1">Manage deliveries</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-3 text-sm">
-            {user && (
-              <span className="text-white/80 truncate max-w-[180px]">
-                {user.email}
-              </span>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-white/20 text-white/90 bg-white/10 hover:bg-white/20"
-              onClick={() => navigate("/select-role")}
-            >
-              <Repeat2 className="h-3 w-3 mr-1" />
-              Switch role
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white/80 hover:bg-white/10"
-              onClick={signOut}
-            >
-              <LogOut className="h-3 w-3 mr-1" />
-              Logout
-            </Button>
-          </div>
+          <Button variant="ghost" size="icon" onClick={signOut} className="text-white hover:bg-white/20">
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
       </header>
 
-      <main className="p-4 space-y-6 max-w-4xl mx-auto">
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card className="bg-white/5 border-white/10">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-semibold text-sky-400">{stats.active}</p>
-                <p className="text-sm text-muted-foreground">Active Jobs</p>
-              </div>
-            </CardContent>
+      <main className="p-4 space-y-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <CardHeader className="pb-2">
+              <CardDescription>Total</CardDescription>
+              <CardTitle className="text-4xl font-bold">{stats.totalDeliveries}</CardTitle>
+            </CardHeader>
           </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-semibold text-sky-300">{stats.completed}</p>
-                <p className="text-sm text-muted-foreground">Completed</p>
-              </div>
-            </CardContent>
+          <Card className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+            <CardHeader className="pb-2">
+              <CardDescription>Completed</CardDescription>
+              <CardTitle className="text-4xl font-bold">{stats.completed}</CardTitle>
+            </CardHeader>
           </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-semibold text-sky-200">{stats.success}%</p>
-                <p className="text-sm text-muted-foreground">Success Rate</p>
-              </div>
-            </CardContent>
+          <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+            <CardHeader className="pb-2">
+              <CardDescription>Active</CardDescription>
+              <CardTitle className="text-4xl font-bold">{stats.active}</CardTitle>
+            </CardHeader>
           </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <p className="text-3xl font-semibold text-sky-300">${stats.totalEarnings.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">Total Earnings</p>
-                {stats.pendingEarnings > 0 && (
-                  <p className="text-xs text-sky-200 mt-1">${stats.pendingEarnings.toFixed(2)} pending</p>
-                )}
-              </div>
-            </CardContent>
+          <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border-yellow-500/20">
+            <CardHeader className="pb-2">
+              <CardDescription>Points Earned</CardDescription>
+              <CardTitle className="text-4xl font-bold">{stats.pointsEarned} pts</CardTitle>
+            </CardHeader>
           </Card>
         </div>
 
-        <Tabs defaultValue="requests" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="requests">Available Requests</TabsTrigger>
-            <TabsTrigger value="earnings">Earnings</TabsTrigger>
+        <Tabs defaultValue="pending" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="pending">
+              Pending
+              {pendingDeliveries.length > 0 && (
+                <Badge className="ml-2" variant="secondary">{pendingDeliveries.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="active">
+              Active
+              {activeDeliveries.length > 0 && (
+                <Badge className="ml-2" variant="secondary">{activeDeliveries.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="requests">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pending Requests</CardTitle>
-                <CardDescription>
-                  {loading ? "Syncing with core server..." : "Pick a mission and take control"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {pending.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No pending requests available</p>
-                  </div>
-                ) : (
-                  pending.map((request) => (
-                    <div key={request.id} className="p-4 border rounded-lg space-y-3 bg-card/60">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <Package className="h-5 w-5 text-primary" />
-                          <span className="font-semibold">
-                            {request.type === "mission" ? "Mission" : "Delivery"} #{request.id.slice(0, 6)}
-                          </span>
-                          <Badge variant="outline" className="text-xs">{request.type}</Badge>
-                        </div>
-                        <Badge variant="secondary" className="uppercase">
-                          {request.package_size || request.priority || "Standard"}
-                        </Badge>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-start gap-2">
-                          <MapPin className="h-4 w-4 text-primary mt-0.5" />
-                          <div>
-                            <p className="font-medium">From: {request.pickup || request.pickup_location}</p>
-                            <p className="text-muted-foreground">To: {request.dropoff || request.dropoff_location}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-4 text-muted-foreground">
-                          <span>ETA: {request.etaMinutes || request.estimated_time || 12} min</span>
-                          {request.packageDetails && <span>{request.packageDetails}</span>}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {new Date(request.createdAt || request.created_at).toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <span>{request.status}</span>
-                      </div>
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          className="flex-1 bg-sky-gradient hover:opacity-90"
-                          disabled={actionId === request.id}
-                          onClick={() => handleAccept(request)}
-                        >
-                          <Check className="mr-2 h-4 w-4" />
-                          Accept
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          className="flex-1"
-                          disabled={actionId === request.id}
-                          onClick={() => handleDecline(request)}
-                        >
-                          <X className="mr-2 h-4 w-4" />
-                          Decline
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent value="pending" className="space-y-4">
+            {loading ? (
+              <Card><CardContent className="pt-6 text-center text-muted-foreground">Loading...</CardContent></Card>
+            ) : pendingDeliveries.length === 0 ? (
+              <Card><CardContent className="pt-6 text-center text-muted-foreground">No pending deliveries</CardContent></Card>
+            ) : (
+              pendingDeliveries.map(renderDeliveryCard)
+            )}
           </TabsContent>
 
-          <TabsContent value="earnings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Earnings History</CardTitle>
-                <CardDescription>Track your completed missions and payments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {earnings.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <DollarSign className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No earnings yet. Complete missions to start earning!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {earnings.map((earning) => (
-                      <div key={earning.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-semibold">${parseFloat(earning.amount || 0).toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {earning.delivery_id ? `Delivery #${earning.delivery_id.slice(0, 8)}` : "Mission"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(earning.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Badge variant={earning.status === "paid" ? "default" : earning.status === "pending" ? "secondary" : "destructive"}>
-                          {earning.status}
-                        </Badge>
-                      </div>
-                    ))}
-                    <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">Total Earnings</span>
-                        <span className="text-2xl font-bold text-accent">${stats.totalEarnings.toFixed(2)}</span>
-                      </div>
-                      {stats.pendingEarnings > 0 && (
-                        <div className="flex items-center justify-between mt-2 text-sm">
-                          <span className="text-muted-foreground">Pending</span>
-                          <span className="text-yellow-500">${stats.pendingEarnings.toFixed(2)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent value="active" className="space-y-4">
+            {activeDeliveries.length === 0 ? (
+              <Card><CardContent className="pt-6 text-center text-muted-foreground">No active deliveries</CardContent></Card>
+            ) : (
+              activeDeliveries.map(renderDeliveryCard)
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-4">
+            {completedDeliveries.length === 0 ? (
+              <Card><CardContent className="pt-6 text-center text-muted-foreground">No completed deliveries</CardContent></Card>
+            ) : (
+              completedDeliveries.map(renderDeliveryCard)
+            )}
           </TabsContent>
         </Tabs>
       </main>

@@ -2,11 +2,37 @@ import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, LogOut, Shield } from "lucide-react";
+import { User, Mail, Phone, LogOut, Shield, Coins } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Profile() {
   const { user, userRole, signOut } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (error) throw error;
+        setProfile(data);
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -30,7 +56,7 @@ export default function Profile() {
               <User className="h-5 w-5 text-primary" />
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Name</p>
-                <p className="font-medium">User Name</p>
+                <p className="font-medium">{profile?.name || "User"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
@@ -44,7 +70,16 @@ export default function Profile() {
               <Phone className="h-5 w-5 text-primary" />
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="font-medium">Not set</p>
+                <p className="font-medium">{profile?.phone || "Not set"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border-2 border-primary/30">
+              <Coins className="h-6 w-6 text-primary" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Available Points</p>
+                <p className="font-bold text-2xl text-primary">
+                  {loading ? "..." : profile?.points?.toLocaleString() || "0"}
+                </p>
               </div>
             </div>
           </CardContent>
