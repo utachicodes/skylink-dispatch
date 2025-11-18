@@ -1,11 +1,17 @@
+// Use environment variable or default to production Render URL
 export const CORE_API_URL =
-  import.meta.env.VITE_CORE_API_URL || "http://localhost:4000";
+  import.meta.env.VITE_CORE_API_URL || "https://skylink-j40c.onrender.com";
 
-// Log warning if using default (development) URL in production
+// Log info about which API URL is being used
+if (import.meta.env.DEV) {
+  console.log(`[SkyLink] Using Core API: ${CORE_API_URL}`);
+}
+
+// Warn if using default in production (should set env var for flexibility)
 if (import.meta.env.PROD && !import.meta.env.VITE_CORE_API_URL) {
-  console.warn(
-    "[SkyLink] VITE_CORE_API_URL not set. Core API features will not work. " +
-    "Set VITE_CORE_API_URL in Vercel environment variables."
+  console.info(
+    "[SkyLink] Using default Core API URL. " +
+    "Set VITE_CORE_API_URL in Vercel environment variables to customize."
   );
 }
 
