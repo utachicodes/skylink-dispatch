@@ -2,8 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { MissionStore } from "./missionStore.js";
-import { MavlinkGateway } from "./mavlinkGateway.js";
-import type { CommandEnvelope, MissionPayload, TelemetryFrame } from "./types.js";
+import type { MissionPayload } from "./types.js";
 
 dotenv.config();
 
@@ -11,9 +10,6 @@ const app = express();
 const port = Number(process.env.PORT || 4000);
 
 const missionStore = new MissionStore();
-const mavlinkGateway = new MavlinkGateway({
-  port: Number(process.env.MAVLINK_PORT || 5761),
-});
 
 app.use(cors());
 app.use(express.json());
@@ -87,42 +83,42 @@ app.post("/api/missions/:id/status", async (req, res) => {
   res.json(mission);
 });
 
+// Telemetry endpoints - simplified (no MAVLink)
 app.get("/api/telemetry/latest", (_req, res) => {
-  res.json(mavlinkGateway.latest());
+  // Return empty array - telemetry will be handled by your separate server
+  res.json([]);
 });
 
 app.get("/api/telemetry/stream", (req, res) => {
+  // SSE endpoint - returns empty stream
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     Connection: "keep-alive",
     "Cache-Control": "no-cache",
   });
-
-  const handler = (frame: TelemetryFrame) => {
-    res.write(`data: ${JSON.stringify(frame)}\n\n`);
-  };
-
-  mavlinkGateway.on("telemetry", handler);
+  
+  // Send initial empty data
+  res.write(`data: ${JSON.stringify([])}\n\n`);
+  
+  // Keep connection alive
+  const interval = setInterval(() => {
+    res.write(`: keepalive\n\n`);
+  }, 30000);
+  
   req.on("close", () => {
-    mavlinkGateway.off("telemetry", handler);
+    clearInterval(interval);
   });
 });
 
 app.post("/api/telemetry/mock", (req, res) => {
-  const frame = req.body as TelemetryFrame;
-  if (!frame.droneId) return res.status(400).json({ error: "droneId required" });
-  mavlinkGateway.pushMock({ ...frame, updatedAt: new Date().toISOString() });
-  res.status(202).json({ status: "queued" });
+  // Mock endpoint - accepts but doesn't process
+  res.status(202).json({ status: "accepted (telemetry handled by separate server)" });
 });
 
 app.post("/api/commands", (req, res) => {
-  try {
-    const command = req.body as CommandEnvelope;
-    mavlinkGateway.sendCommand(command);
-    res.json({ status: "sent" });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
+  // Command endpoint - accepts but doesn't process
+  // Commands will be handled by your separate server
+  res.json({ status: "accepted (commands handled by separate server)" });
 });
 
 // Video streaming endpoints
@@ -158,5 +154,7 @@ app.get("/api/video/webrtc/:droneId", (req, res) => {
 
 app.listen(port, () => {
   console.log(`[SkyLink Core] listening on port ${port}`);
+  console.log(`[SkyLink Core] Mission management API ready`);
+  console.log(`[SkyLink Core] Telemetry and commands handled by separate server`);
 });
 

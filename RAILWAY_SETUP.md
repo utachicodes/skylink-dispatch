@@ -5,7 +5,7 @@ This guide will help you deploy the SkyLink backend to Railway and configure the
 ## Step 1: Deploy Backend to Railway
 
 ### 1.1 Create Railway Account
-1. Go to [railway.app](https://railway.app)
+1. Go to [railway.app](https:/A/railway.app)
 2. Sign up with GitHub (recommended) or email
 3. Verify your email if needed
 
@@ -29,7 +29,6 @@ In Railway service settings → **Variables**, add:
 
 ```
 PORT=4000
-MAVLINK_PORT=5761
 NODE_ENV=production
 ```
 

@@ -26,7 +26,6 @@ SkyLink is a comprehensive drone dispatch platform designed to facilitate critic
 - **Semi-Autonomous Control**: Operator-assisted flight with virtual joystick controls and emergency overrides
 - **Multi-Sector Support**: Designed for police facial recognition, firefighter operations, medical deliveries, and commercial logistics
 - **Mission Management**: Complete lifecycle tracking from request to completion with operator earnings tracking
-- **MAVLink Integration**: Central server architecture supporting MAVLink protocol for drone communication
 
 ## Architecture
 
@@ -39,11 +38,11 @@ SkyLink follows a three-tier architecture:
 - **MAVProxy Bridge**: Lightweight script connecting CubePilot to central server
 
 ### Step 2: Central Server (Core Brain)
-- **Location**: Runs 24/7 on cloud infrastructure or dedicated server
-- **MAVLink Gateway**: UDP listener on port 5761 (configurable) for drone connections
-- **REST API**: Mission management, telemetry streaming, and command relay
-- **Event Streaming**: Server-Sent Events (SSE) for real-time telemetry updates
+- **Location**: Runs 24/7 on cloud infrastructure (Railway recommended)
+- **REST API**: Mission management endpoints
+- **Event Streaming**: Server-Sent Events (SSE) for real-time updates
 - **Mission Store**: In-memory mission tracking with status management
+- **Note**: Telemetry and drone control handled by separate server
 
 ### Step 3: Client Application (Web/Mobile)
 - **Client Dashboard**: Request deliveries, track missions, view history
@@ -115,7 +114,6 @@ SkyLink follows a three-tier architecture:
    Create a `.env` file in the `server` directory:
    ```env
    PORT=4000
-   MAVLINK_PORT=5761
    ```
 
 ### Running the Application
@@ -159,7 +157,6 @@ skylink-dispatch/
 ├── server/                      # Core server (Step 2)
 │   ├── src/
 │   │   ├── index.ts            # Express server entry point
-│   │   ├── mavlinkGateway.ts   # MAVLink bridge and telemetry handler
 │   │   ├── missionStore.ts    # Mission state management
 │   │   └── types.ts            # TypeScript definitions
 │   ├── package.json
@@ -269,8 +266,8 @@ The core server can be deployed to:
 Ensure the server has:
 - Persistent connection (24/7 uptime)
 - Public IP address or domain
-- UDP port 5761 open for MAVLink connections
 - Environment variables configured
+- Note: This server handles mission management only. Telemetry and drone control are handled separately.
 
 ## Contributing
 
