@@ -70,6 +70,11 @@ SkyLink follows a three-tier architecture:
 - **CORS**: Cross-origin resource sharing
 - **dotenv**: Environment configuration
 
+### Deployment
+- **Frontend**: Vercel (automatic deployments from GitHub)
+- **Backend**: Railway (recommended) or Render
+- **Database**: Supabase (PostgreSQL with RLS)
+
 ## Getting Started
 
 ### Prerequisites
@@ -228,6 +233,18 @@ To test the real-time telemetry system:
 3. Open the dashboard or pilot control room to see live updates
 
 ## Deployment
+
+### Backend Deployment (Railway - Recommended)
+
+See [RAILWAY_SETUP.md](./RAILWAY_SETUP.md) for detailed instructions.
+
+**Quick Steps:**
+1. Sign up at [railway.app](https://railway.app)
+2. Create new project → Deploy from GitHub
+3. Set root directory to `server`
+4. Railway auto-detects build/start commands
+5. Get your Railway URL (e.g., `https://skylink-production.up.railway.app`)
+6. Set `VITE_CORE_API_URL` in Vercel to your Railway URL
 
 ### Frontend Deployment
 

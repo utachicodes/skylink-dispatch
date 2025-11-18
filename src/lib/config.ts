@@ -1,6 +1,8 @@
-// Use environment variable or default to production Render URL
+// Use environment variable or default to production backend URL
+// Railway will provide a URL like: https://skylink-production.up.railway.app
+// Set VITE_CORE_API_URL in Vercel to override this default
 export const CORE_API_URL =
-  import.meta.env.VITE_CORE_API_URL || "https://skylink-j40c.onrender.com";
+  import.meta.env.VITE_CORE_API_URL || "https://skylink-production.up.railway.app";
 
 // Log info about which API URL is being used
 if (import.meta.env.DEV) {
