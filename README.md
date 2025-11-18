@@ -25,7 +25,7 @@ SkyLink is a comprehensive drone dispatch platform designed to facilitate critic
 - **Real-Time Telemetry**: Live drone tracking with battery, location, speed, and signal quality monitoring
 - **Semi-Autonomous Control**: Operator-assisted flight with virtual joystick controls and emergency overrides
 - **Multi-Sector Support**: Designed for police facial recognition, firefighter operations, medical deliveries, and commercial logistics
-- **Mission Management**: Complete lifecycle tracking from request to completion with payout integration
+- **Mission Management**: Complete lifecycle tracking from request to completion with operator earnings tracking
 - **MAVLink Integration**: Central server architecture supporting MAVLink protocol for drone communication
 
 ## Architecture

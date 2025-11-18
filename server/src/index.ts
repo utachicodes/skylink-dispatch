@@ -147,62 +147,6 @@ app.get("/api/video/webrtc/:droneId", (req, res) => {
   });
 });
 
-// Payment endpoints
-app.post("/api/payments/create-intent", async (req, res) => {
-  try {
-    const { amount, missionId } = req.body;
-    
-    if (!amount || !missionId) {
-      return res.status(400).json({ error: "amount and missionId are required" });
-    }
-
-    // In production, use Stripe SDK
-    // For now, return a mock client secret
-    const stripe = (await import("stripe")).default;
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    
-    if (!stripeKey) {
-      // Mock payment intent for development
-      return res.json({
-        clientSecret: "mock_client_secret_" + Date.now(),
-        amount,
-        missionId,
-      });
-    }
-
-    const stripeClient = new stripe(stripeKey, { apiVersion: "2024-11-20.acacia" });
-    const paymentIntent = await stripeClient.paymentIntents.create({
-      amount: Math.round(amount),
-      currency: "usd",
-      metadata: { missionId },
-    });
-
-    res.json({
-      clientSecret: paymentIntent.client_secret,
-      amount,
-      missionId,
-    });
-  } catch (error: any) {
-    console.error("[Payment] Failed to create intent:", error);
-    res.status(500).json({ error: error.message || "Payment processing failed" });
-  }
-});
-
-app.post("/api/payments/confirm", async (req, res) => {
-  try {
-    const { paymentIntentId, missionId } = req.body;
-    
-    // Update mission status to confirmed after payment
-    if (missionId) {
-      missionStore.updateStatus(missionId, "confirmed");
-    }
-    
-    res.json({ status: "confirmed", missionId });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message || "Payment confirmation failed" });
-  }
-});
-
 app.listen(port, () => {
   console.log(`[SkyLink Core] listening on port ${port}`);
 });

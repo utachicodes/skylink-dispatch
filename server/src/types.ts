@@ -1,5 +1,6 @@
 export type MissionStatus =
   | "pending"
+  | "confirmed"
   | "assigned"
   | "in-flight"
   | "completed"
