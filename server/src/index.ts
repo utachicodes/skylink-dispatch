@@ -18,6 +18,15 @@ const mavlinkGateway = new MavlinkGateway({
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (_req, res) => {
+  res.json({ 
+    service: "SkyLink Core API",
+    status: "running",
+    version: "1.0.0",
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
