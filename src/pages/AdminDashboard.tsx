@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Plane, Package, Activity, Settings, DollarSign, TrendingUp, AlertCircle, LogOut } from "lucide-react";
+import { Users, Plane, Package, Activity, Settings, Coins, TrendingUp, AlertCircle, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { coreApi } from "@/lib/api";
 import { LiveMap } from "@/components/LiveMap";
@@ -16,7 +16,7 @@ interface Stats {
   activeDrones: number;
   deliveriesToday: number;
   successRate: number;
-  revenueToday: number;
+  pointsToday: number;
   activeMissions: number;
 }
 
@@ -27,7 +27,7 @@ export default function AdminDashboard() {
     activeDrones: 0,
     deliveriesToday: 0,
     successRate: 0,
-    revenueToday: 0,
+    pointsToday: 0,
     activeMissions: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -62,11 +62,14 @@ export default function AdminDashboard() {
       // Load missions
       const activeMissions = await coreApi.listActiveMissions();
       
-      // Calculate success rate (mock for now)
+      // Calculate success rate
       const completed = deliveries?.filter((d) => d.status === "delivered") || [];
       const successRate = deliveries && deliveries.length > 0 
         ? Math.round((completed.length / deliveries.length) * 100) 
         : 0;
+
+      // Calculate total points for today
+      const pointsToday = deliveries?.reduce((sum, d) => sum + (d.points_cost || 0), 0) || 0;
 
       // Load recent activity from logs
       const { data: logs } = await supabase
@@ -80,7 +83,7 @@ export default function AdminDashboard() {
         activeDrones: droneCount || 0,
         deliveriesToday: deliveryCount || 0,
         successRate,
-        revenueToday: (deliveryCount || 0) * 15, // Mock: $15 per delivery
+        pointsToday,
         activeMissions: activeMissions.length,
       });
       
@@ -185,10 +188,10 @@ export default function AdminDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Revenue Today</p>
-                  <p className="text-3xl font-semibold text-sky-300">${stats.revenueToday}</p>
+                  <p className="text-sm text-muted-foreground">Points Today</p>
+                  <p className="text-3xl font-semibold text-sky-300">{stats.pointsToday.toLocaleString()} pts</p>
                 </div>
-                  <DollarSign className="h-8 w-8 text-sky-200" />
+                  <Coins className="h-8 w-8 text-sky-200" />
               </div>
             </CardContent>
           </Card>
