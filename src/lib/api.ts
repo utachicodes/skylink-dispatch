@@ -37,42 +37,53 @@ const handleResponse = async (res: Response) => {
   return res.json();
 };
 
+const safeFetch = async <T>(url: string, options?: RequestInit, defaultValue?: T): Promise<T> => {
+  try {
+    const res = await fetch(url, options);
+    return await handleResponse(res) as T;
+  } catch (error) {
+    console.warn(`[Core API] Request failed: ${url}`, error);
+    // Return default value if provided, otherwise empty array for list endpoints
+    if (defaultValue !== undefined) {
+      return defaultValue;
+    }
+    if (url.includes("/missions") || url.includes("/telemetry")) {
+      return [] as T;
+    }
+    throw error;
+  }
+};
+
 export const coreApi = {
   async listMissions() {
-    const res = await fetch(api.mission.list());
-    return handleResponse(res) as Promise<MissionResponse[]>;
+    return safeFetch<MissionResponse[]>(api.mission.list());
   },
   async listActiveMissions() {
-    const res = await fetch(api.mission.active());
-    return handleResponse(res) as Promise<MissionResponse[]>;
+    return safeFetch<MissionResponse[]>(api.mission.active());
   },
   async createMission(payload: MissionRequest) {
-    const res = await fetch(api.mission.create(), {
+    return safeFetch<MissionResponse>(api.mission.create(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    return handleResponse(res) as Promise<MissionResponse>;
   },
   async assignMission(id: string, operatorId: string) {
-    const res = await fetch(api.mission.assign(id), {
+    return safeFetch<MissionResponse>(api.mission.assign(id), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ operatorId }),
     });
-    return handleResponse(res) as Promise<MissionResponse>;
   },
   async updateMissionStatus(id: string, status: string) {
-    const res = await fetch(api.mission.status(id), {
+    return safeFetch<MissionResponse>(api.mission.status(id), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    return handleResponse(res) as Promise<MissionResponse>;
   },
   async latestTelemetry() {
-    const res = await fetch(api.telemetry.latest());
-    return handleResponse(res) as Promise<TelemetryFrame[]>;
+    return safeFetch<TelemetryFrame[]>(api.telemetry.latest(), undefined, [] as TelemetryFrame[]);
   },
   async sendCommand(command: {
     droneId: string;
@@ -85,12 +96,11 @@ export const coreApi = {
       | "CUSTOM";
     payload?: Record<string, unknown>;
   }) {
-    const res = await fetch(api.commands(), {
+    return safeFetch<{ status: string }>(api.commands(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(command),
     });
-    return handleResponse(res) as Promise<{ status: string }>;
   },
 };
 

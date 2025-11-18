@@ -56,7 +56,8 @@ export default function PilotControl() {
           
           if (found) setMission(found);
         } catch (error) {
-          console.error("Failed to load mission", error);
+          console.warn("Failed to load mission from core API (this is OK if core API is not configured)", error);
+          // Don't break the page if core API is unavailable
         }
       } else if (deliveryId) {
         // Load delivery data if needed

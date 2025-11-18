@@ -1,6 +1,14 @@
 export const CORE_API_URL =
   import.meta.env.VITE_CORE_API_URL || "http://localhost:4000";
 
+// Log warning if using default (development) URL in production
+if (import.meta.env.PROD && !import.meta.env.VITE_CORE_API_URL) {
+  console.warn(
+    "[SkyLink] VITE_CORE_API_URL not set. Core API features will not work. " +
+    "Set VITE_CORE_API_URL in Vercel environment variables."
+  );
+}
+
 export const api = {
   mission: {
     list: () => `${CORE_API_URL}/api/missions`,

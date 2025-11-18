@@ -59,8 +59,14 @@ export default function AdminDashboard() {
         .select("*", { count: "exact" })
         .gte("created_at", today.toISOString());
       
-      // Load missions
-      const activeMissions = await coreApi.listActiveMissions();
+      // Load missions (gracefully handle API failures)
+      let activeMissions: any[] = [];
+      try {
+        activeMissions = await coreApi.listActiveMissions();
+      } catch (error) {
+        console.warn("Failed to load missions from core API:", error);
+        // Continue with empty array
+      }
       
       // Calculate success rate
       const completed = deliveries?.filter((d) => d.status === "delivered") || [];
