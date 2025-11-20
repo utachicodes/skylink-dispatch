@@ -10,9 +10,10 @@ export const deliveryService = {
       .from("deliveries")
       .insert(delivery)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("Failed to create delivery");
     return data;
   },
 
@@ -31,9 +32,10 @@ export const deliveryService = {
       .update(updates)
       .eq("id", deliveryId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("Delivery not found");
     return data;
   },
 
@@ -53,9 +55,10 @@ export const deliveryService = {
       .update(updates)
       .eq("id", deliveryId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("Delivery not found");
     return data;
   },
 
@@ -64,9 +67,10 @@ export const deliveryService = {
       .from("deliveries")
       .select("*")
       .eq("id", deliveryId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("Delivery not found");
     return data;
   },
 

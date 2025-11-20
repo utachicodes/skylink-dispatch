@@ -66,7 +66,7 @@ export default function PilotControl() {
             .from("deliveries")
             .select("*")
             .eq("id", deliveryId)
-            .single();
+            .maybeSingle();
           if (data) {
             setMission({ ...data, type: "delivery" });
           }

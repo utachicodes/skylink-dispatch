@@ -44,7 +44,9 @@ export async function getUserRole(userId: string): Promise<string | null> {
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
     
     if (error || !data) return null;
     return data.role;
