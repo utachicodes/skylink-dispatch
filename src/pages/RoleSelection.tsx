@@ -19,25 +19,15 @@ export default function RoleSelection() {
     try {
       console.log("[RoleSelection] Setting role to:", role);
       
-      // Delete all existing roles for this user
-      const { error: deleteError } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", user.id);
+      // Use the secure database function to set role
+      // This bypasses RLS restrictions
+      const { error } = await supabase.rpc("set_user_role", {
+        _role: role,
+      });
 
-      if (deleteError) {
-        console.error("Error deleting old roles:", deleteError);
-        // Continue anyway - user might not have any roles yet
-      }
-
-      // Insert the new role
-      const { error: insertError } = await supabase
-        .from("user_roles")
-        .insert({ user_id: user.id, role });
-
-      if (insertError) {
-        console.error("Error inserting new role:", insertError);
-        throw insertError;
+      if (error) {
+        console.error("Error setting role:", error);
+        throw error;
       }
 
       console.log("[RoleSelection] Role successfully set to:", role);
