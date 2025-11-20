@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Navigation, Loader2, Route, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { Card } from "./ui/card";
 
 // Fix default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -32,15 +33,65 @@ export function DeliveryLocationMap({
   const pickupMarkerRef = useRef<L.Marker | null>(null);
   const dropoffMarkerRef = useRef<L.Marker | null>(null);
   const userLocationMarkerRef = useRef<L.Marker | null>(null);
+  const routeLineRef = useRef<L.Polyline | null>(null);
   const [selectingMarker, setSelectingMarker] = useState<MarkerType | null>(null);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [distance, setDistance] = useState<number | null>(null);
+  const [pickupSet, setPickupSet] = useState(false);
+  const [dropoffSet, setDropoffSet] = useState(false);
 
-  // Custom marker icons
+  // Calculate distance between two points (Haversine formula)
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Draw route line between markers
+  const drawRouteLine = () => {
+    if (pickupMarkerRef.current && dropoffMarkerRef.current && mapRef.current) {
+      const pickupPos = pickupMarkerRef.current.getLatLng();
+      const dropoffPos = dropoffMarkerRef.current.getLatLng();
+      
+      // Remove old line
+      if (routeLineRef.current) {
+        routeLineRef.current.remove();
+      }
+      
+      // Draw new line with animation
+      routeLineRef.current = L.polyline(
+        [pickupPos, dropoffPos],
+        {
+          color: '#3b82f6',
+          weight: 4,
+          opacity: 0.7,
+          dashArray: '10, 10',
+          className: 'route-line-animated'
+        }
+      ).addTo(mapRef.current);
+      
+      // Calculate and set distance
+      const dist = calculateDistance(pickupPos.lat, pickupPos.lng, dropoffPos.lat, dropoffPos.lng);
+      setDistance(dist);
+      
+      // Fit bounds to show both markers
+      const bounds = L.latLngBounds([pickupPos, dropoffPos]);
+      mapRef.current.fitBounds(bounds, { padding: [80, 80] });
+    }
+  };
+
+  // Custom marker icons with better design
   const createMarkerIcon = (type: MarkerType, isActive: boolean = false) => {
     const colors = {
-      pickup: isActive ? "#10b981" : "#059669",
-      dropoff: isActive ? "#ef4444" : "#dc2626",
+      pickup: { main: '#10b981', shadow: 'rgba(16, 185, 129, 0.3)' },
+      dropoff: { main: '#ef4444', shadow: 'rgba(239, 68, 68, 0.3)' },
     };
     
     return L.divIcon({
@@ -48,48 +99,51 @@ export function DeliveryLocationMap({
       html: `
         <div style="
           position: relative;
-          width: 40px;
-          height: 40px;
+          width: 48px;
+          height: 48px;
+          filter: drop-shadow(0 10px 20px ${colors[type].shadow});
         ">
           <div style="
-            background: ${colors[type]};
-            width: 40px;
-            height: 40px;
+            background: linear-gradient(135deg, ${colors[type].main} 0%, ${colors[type].main}dd 100%);
+            width: 48px;
+            height: 48px;
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
-            border: 3px solid white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 4px solid white;
             display: flex;
             align-items: center;
             justify-content: center;
-            ${isActive ? 'animation: pulse 2s infinite;' : ''}
+            ${isActive ? 'animation: bounce 1s infinite;' : ''}
+            transition: all 0.3s ease;
           ">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white" style="transform: rotate(45deg);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white" style="transform: rotate(45deg);">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
             </svg>
           </div>
         </div>
       `,
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
+      iconSize: [48, 48],
+      iconAnchor: [24, 48],
     });
   };
 
   const userLocationIcon = L.divIcon({
     className: "user-location-marker",
     html: `
-      <div style="
-        background: #3b82f6;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        border: 4px solid white;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        animation: pulse 2s infinite;
-      "></div>
+      <div style="position: relative;">
+        <div style="
+          background: #3b82f6;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: 4px solid white;
+          box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.2);
+          animation: ripple 2s infinite;
+        "></div>
+      </div>
     `,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
   });
 
   // Initialize map
@@ -130,9 +184,12 @@ export function DeliveryLocationMap({
               pickupMarkerRef.current.on("dragend", () => {
                 const pos = pickupMarkerRef.current!.getLatLng();
                 onPickupChange({ lat: pos.lat, lng: pos.lng, address: `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}` });
+                drawRouteLine();
               });
             }
             onPickupChange({ lat, lng, address });
+            setPickupSet(true);
+            setTimeout(drawRouteLine, 100);
           } else if (selectingMarker === "dropoff") {
             if (dropoffMarkerRef.current) {
               dropoffMarkerRef.current.setLatLng([lat, lng]);
@@ -149,9 +206,12 @@ export function DeliveryLocationMap({
               dropoffMarkerRef.current.on("dragend", () => {
                 const pos = dropoffMarkerRef.current!.getLatLng();
                 onDropoffChange({ lat: pos.lat, lng: pos.lng, address: `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}` });
+                drawRouteLine();
               });
             }
             onDropoffChange({ lat, lng, address });
+            setDropoffSet(true);
+            setTimeout(drawRouteLine, 100);
           }
           
           setSelectingMarker(null);
@@ -239,6 +299,7 @@ export function DeliveryLocationMap({
         pickupMarkerRef.current.on("dragend", () => {
           const pos = pickupMarkerRef.current!.getLatLng();
           onPickupChange({ lat: pos.lat, lng: pos.lng, address: `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}` });
+          drawRouteLine();
         });
       }
       onPickupChange({
@@ -246,55 +307,150 @@ export function DeliveryLocationMap({
         lng: userLocation.lng,
         address: "Your current location",
       });
+      setPickupSet(true);
+      setTimeout(drawRouteLine, 100);
     }
+  };
+
+  // Clear pickup marker
+  const clearPickup = () => {
+    if (pickupMarkerRef.current) {
+      pickupMarkerRef.current.remove();
+      pickupMarkerRef.current = null;
+    }
+    if (routeLineRef.current) {
+      routeLineRef.current.remove();
+      routeLineRef.current = null;
+    }
+    setPickupSet(false);
+    setDistance(null);
+    onPickupChange({ lat: 14.7167, lng: -17.4677 });
+  };
+
+  // Clear dropoff marker
+  const clearDropoff = () => {
+    if (dropoffMarkerRef.current) {
+      dropoffMarkerRef.current.remove();
+      dropoffMarkerRef.current = null;
+    }
+    if (routeLineRef.current) {
+      routeLineRef.current.remove();
+      routeLineRef.current = null;
+    }
+    setDropoffSet(false);
+    setDistance(null);
+    onDropoffChange({ lat: 14.7167, lng: -17.4677 });
   };
 
   return (
     <div className="space-y-4">
       {/* Map Container */}
-      <div className="relative rounded-lg overflow-hidden border-2 border-border">
+      <div className="relative rounded-xl overflow-hidden border-2 border-border shadow-2xl">
         <div
           id="delivery-location-map"
-          style={{ width: "100%", height: "450px" }}
+          style={{ width: "100%", height: "500px" }}
+          className="transition-all duration-300"
         />
         
-        {/* Floating Controls */}
+        {/* Floating Controls - Top Left */}
         <div className="absolute top-4 left-4 z-[1000] space-y-2">
-          <Button
-            type="button"
-            size="sm"
-            onClick={getUserLocation}
-            disabled={gettingLocation}
-            className="bg-white text-black hover:bg-white/90 shadow-lg"
-          >
-            {gettingLocation ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Navigation className="h-4 w-4 mr-2" />
-            )}
-            {gettingLocation ? "Getting..." : "My Location"}
-          </Button>
-          
-          {userLocation && (
+          <Card className="bg-white/95 backdrop-blur-sm p-2 shadow-xl border-0">
             <Button
               type="button"
               size="sm"
-              onClick={setUserLocationAsPickup}
-              className="bg-green-600 text-white hover:bg-green-700 shadow-lg w-full"
+              onClick={getUserLocation}
+              disabled={gettingLocation}
+              className="bg-blue-600 text-white hover:bg-blue-700 w-full"
             >
-              <MapPin className="h-4 w-4 mr-2" />
-              Set as Pickup
+              {gettingLocation ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Navigation className="h-4 w-4 mr-2" />
+              )}
+              {gettingLocation ? "Locating..." : "My Location"}
             </Button>
-          )}
+            
+            {userLocation && !pickupSet && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={setUserLocationAsPickup}
+                className="bg-green-600 text-white hover:bg-green-700 w-full mt-2"
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                Use as Pickup
+              </Button>
+            )}
+          </Card>
         </div>
 
-        {/* Selection Mode Indicator */}
-        {selectingMarker && (
+        {/* Distance Info - Top Right */}
+        {distance !== null && (
           <div className="absolute top-4 right-4 z-[1000]">
-            <Badge className="bg-black/80 text-white text-sm py-2 px-3 shadow-lg">
-              <MapPin className="h-4 w-4 mr-2" />
-              Click map to set {selectingMarker} location
-            </Badge>
+            <Card className="bg-white/95 backdrop-blur-sm px-4 py-3 shadow-xl border-0">
+              <div className="flex items-center gap-2">
+                <Route className="h-5 w-5 text-blue-600" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Distance</div>
+                  <div className="text-lg font-bold text-blue-600">
+                    {distance.toFixed(2)} km
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    ~{Math.ceil(distance * 2)} min by drone
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Selection Mode Indicator - Top Center */}
+        {selectingMarker && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000]">
+            <Card className="bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 shadow-xl border-0">
+              <div className="flex items-center gap-2 text-white">
+                <MapPin className="h-5 w-5 animate-bounce" />
+                <span className="font-semibold">
+                  Click map to set {selectingMarker} location
+                </span>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Location Status - Bottom Left */}
+        {(pickupSet || dropoffSet) && (
+          <div className="absolute bottom-4 left-4 z-[1000] space-y-2">
+            {pickupSet && (
+              <Card className="bg-green-600 text-white px-3 py-2 shadow-xl border-0 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm font-medium">Pickup Set</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={clearPickup}
+                  className="h-5 w-5 p-0 ml-2 hover:bg-white/20"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Card>
+            )}
+            {dropoffSet && (
+              <Card className="bg-red-600 text-white px-3 py-2 shadow-xl border-0 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm font-medium">Dropoff Set</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={clearDropoff}
+                  className="h-5 w-5 p-0 ml-2 hover:bg-white/20"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </Card>
+            )}
           </div>
         )}
       </div>
@@ -305,42 +461,116 @@ export function DeliveryLocationMap({
           type="button"
           variant={selectingMarker === "pickup" ? "default" : "outline"}
           onClick={() => setSelectingMarker(selectingMarker === "pickup" ? null : "pickup")}
-          className="w-full"
+          className={`w-full h-14 text-base font-semibold transition-all ${
+            selectingMarker === "pickup" 
+              ? "bg-green-600 hover:bg-green-700 text-white shadow-lg scale-105" 
+              : pickupSet
+              ? "border-green-600 text-green-600 bg-green-50"
+              : ""
+          }`}
+          disabled={pickupSet && selectingMarker !== "pickup"}
         >
-          <MapPin className="h-4 w-4 mr-2 text-green-500" />
-          {selectingMarker === "pickup" ? "Selecting Pickup..." : "Set Pickup"}
+          <MapPin className={`h-5 w-5 mr-2 ${selectingMarker === "pickup" ? "animate-bounce" : ""}`} />
+          {selectingMarker === "pickup" ? "Click Map Now" : pickupSet ? "✓ Pickup Set" : "Set Pickup Location"}
         </Button>
         
         <Button
           type="button"
           variant={selectingMarker === "dropoff" ? "default" : "outline"}
           onClick={() => setSelectingMarker(selectingMarker === "dropoff" ? null : "dropoff")}
-          className="w-full"
+          className={`w-full h-14 text-base font-semibold transition-all ${
+            selectingMarker === "dropoff" 
+              ? "bg-red-600 hover:bg-red-700 text-white shadow-lg scale-105" 
+              : dropoffSet
+              ? "border-red-600 text-red-600 bg-red-50"
+              : ""
+          }`}
+          disabled={dropoffSet && selectingMarker !== "dropoff"}
         >
-          <MapPin className="h-4 w-4 mr-2 text-red-500" />
-          {selectingMarker === "dropoff" ? "Selecting Dropoff..." : "Set Dropoff"}
+          <MapPin className={`h-5 w-5 mr-2 ${selectingMarker === "dropoff" ? "animate-bounce" : ""}`} />
+          {selectingMarker === "dropoff" ? "Click Map Now" : dropoffSet ? "✓ Dropoff Set" : "Set Dropoff Location"}
         </Button>
       </div>
 
-      {/* Instructions */}
-      <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-        <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-        <p>
-          Click "Set Pickup" or "Set Dropoff" buttons, then click on the map to place markers.
-          You can also drag markers to adjust locations. Green marker = Pickup, Red marker = Dropoff.
-        </p>
+      {/* Enhanced Instructions */}
+      <div className="grid md:grid-cols-3 gap-3">
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-xl border border-blue-200 dark:border-blue-800">
+          <div className="bg-blue-600 p-2 rounded-lg">
+            <MapPin className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-sm mb-1">1. Select Location Type</h4>
+            <p className="text-xs text-muted-foreground">
+              Click "Set Pickup" or "Set Dropoff" button
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-xl border border-green-200 dark:border-green-800">
+          <div className="bg-green-600 p-2 rounded-lg">
+            <Navigation className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-sm mb-1">2. Click on Map</h4>
+            <p className="text-xs text-muted-foreground">
+              Place marker at desired location
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-xl border border-purple-200 dark:border-purple-800">
+          <div className="bg-purple-600 p-2 rounded-lg">
+            <Route className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-sm mb-1">3. Adjust if Needed</h4>
+            <p className="text-xs text-muted-foreground">
+              Drag markers to fine-tune positions
+            </p>
+          </div>
+        </div>
       </div>
 
       <style>{`
-        @keyframes pulse {
+        @keyframes bounce {
           0%, 100% {
-            transform: scale(1);
-            opacity: 1;
+            transform: translateY(0) rotate(-45deg);
           }
           50% {
-            transform: scale(1.1);
-            opacity: 0.8;
+            transform: translateY(-10px) rotate(-45deg);
           }
+        }
+        
+        @keyframes ripple {
+          0% {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+          }
+          100% {
+            box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
+          }
+        }
+        
+        .route-line-animated {
+          animation: dash 20s linear infinite;
+        }
+        
+        @keyframes dash {
+          to {
+            stroke-dashoffset: -1000;
+          }
+        }
+        
+        .leaflet-container {
+          font-family: inherit;
+        }
+        
+        .leaflet-popup-content-wrapper {
+          border-radius: 12px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .leaflet-popup-tip {
+          box-shadow: 0 3px 14px rgba(0,0,0,0.2);
         }
       `}</style>
     </div>
