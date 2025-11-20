@@ -115,12 +115,13 @@ export default function CreateDelivery() {
           .from("profiles")
           .select("points")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         setUserPoints(data?.points || 0);
       } catch (error) {
         console.error("Error loading points:", error);
+        setUserPoints(0);
       }
     };
 
@@ -255,9 +256,10 @@ export default function CreateDelivery() {
         .from("deliveries")
         .insert(deliveryData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error("Failed to create delivery");
 
       setUserPoints((prev) => prev - finalCost);
       toast.success("Delivery request created successfully!");
