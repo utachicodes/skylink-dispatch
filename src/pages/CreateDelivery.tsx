@@ -34,6 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { DeliveryLocationMap } from "@/components/DeliveryLocationMap";
 
 type DeliveryType = "medical" | "food" | "documents" | "retail" | "emergency" | "other";
 type Priority = "standard" | "express" | "urgent";
@@ -48,6 +49,8 @@ export default function CreateDelivery() {
   const [estimatedCost, setEstimatedCost] = useState(100);
   const [estimatedTime, setEstimatedTime] = useState("15-30 min");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [pickupLocation, setPickupLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
+  const [dropoffLocation, setDropoffLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null);
 
   // Calculate cost based on type, priority, weight, and size
   const calculateCost = (
@@ -399,73 +402,92 @@ export default function CreateDelivery() {
                 <MapPin className="h-5 w-5" />
                 Pickup & Delivery Locations
               </CardTitle>
-              <CardDescription>Enter the pickup and delivery addresses</CardDescription>
+              <CardDescription>Select locations on the map or enter addresses manually</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Interactive Map */}
+              <DeliveryLocationMap
+                onPickupChange={(location) => {
+                  setPickupLocation(location);
+                  // Update the form input
+                  const pickupInput = document.querySelector('[name="pickup"]') as HTMLInputElement;
+                  if (pickupInput && location.address) {
+                    pickupInput.value = location.address;
+                  }
+                }}
+                onDropoffChange={(location) => {
+                  setDropoffLocation(location);
+                  // Update the form input
+                  const dropoffInput = document.querySelector('[name="dropoff"]') as HTMLInputElement;
+                  if (dropoffInput && location.address) {
+                    dropoffInput.value = location.address;
+                  }
+                }}
+              />
+
+              <Separator />
+
+              {/* Address Inputs */}
               <div className="space-y-2">
-                <Label htmlFor="pickup">Pickup Location *</Label>
+                <Label htmlFor="pickup">Pickup Address *</Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-green-500" />
                   <Input
                     id="pickup"
                     name="pickup"
                     placeholder="e.g., Central Pharmacy, Saint-Louis, Senegal"
                     className="pl-10"
                     required
+                    defaultValue={pickupLocation?.address || ""}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    name="pickupLat"
-                    type="number"
-                    step="0.000001"
-                    placeholder="Latitude (14.7167)"
-                    defaultValue="14.7167"
-                    className="text-sm"
-                  />
-                  <Input
-                    name="pickupLng"
-                    type="number"
-                    step="0.000001"
-                    placeholder="Longitude (-17.4677)"
-                    defaultValue="-17.4677"
-                    className="text-sm"
-                  />
-                </div>
+                {pickupLocation && (
+                  <p className="text-xs text-muted-foreground">
+                    Coordinates: {pickupLocation.lat.toFixed(6)}, {pickupLocation.lng.toFixed(6)}
+                  </p>
+                )}
+                {/* Hidden coordinate inputs */}
+                <input
+                  type="hidden"
+                  name="pickupLat"
+                  value={pickupLocation?.lat || 14.7167}
+                />
+                <input
+                  type="hidden"
+                  name="pickupLng"
+                  value={pickupLocation?.lng || -17.4677}
+                />
               </div>
 
-              <Separator />
-
               <div className="space-y-2">
-                <Label htmlFor="dropoff">Delivery Location *</Label>
+                <Label htmlFor="dropoff">Delivery Address *</Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                  <MapPin className="absolute left-3 top-3 h-5 w-5 text-red-500" />
                   <Input
                     id="dropoff"
                     name="dropoff"
                     placeholder="e.g., Hospital, Dakar Plateau, Senegal"
                     className="pl-10"
                     required
+                    defaultValue={dropoffLocation?.address || ""}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    name="dropoffLat"
-                    type="number"
-                    step="0.000001"
-                    placeholder="Latitude (14.7167)"
-                    defaultValue="14.7167"
-                    className="text-sm"
-                  />
-                  <Input
-                    name="dropoffLng"
-                    type="number"
-                    step="0.000001"
-                    placeholder="Longitude (-17.4677)"
-                    defaultValue="-17.4677"
-                    className="text-sm"
-                  />
-                </div>
+                {dropoffLocation && (
+                  <p className="text-xs text-muted-foreground">
+                    Coordinates: {dropoffLocation.lat.toFixed(6)}, {dropoffLocation.lng.toFixed(6)}
+                  </p>
+                )}
+                {/* Hidden coordinate inputs */}
+                <input
+                  type="hidden"
+                  name="dropoffLat"
+                  value={dropoffLocation?.lat || 14.7167}
+                />
+                <input
+                  type="hidden"
+                  name="dropoffLng"
+                  value={dropoffLocation?.lng || -17.4677}
+                />
               </div>
             </CardContent>
           </Card>
