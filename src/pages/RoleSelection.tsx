@@ -17,39 +17,43 @@ export default function RoleSelection() {
     
     setLoading(true);
     try {
-      // Use upsert to handle both insert and update cases
-      // This will insert if no role exists, or update if one does
-      const { error } = await supabase
+      console.log("[RoleSelection] Setting role to:", role);
+      
+      // Delete all existing roles for this user
+      const { error: deleteError } = await supabase
         .from("user_roles")
-        .upsert(
-          { user_id: user.id, role },
-          { onConflict: "user_id,role" }
-        );
+        .delete()
+        .eq("user_id", user.id);
 
-      if (error) {
-        // If upsert fails, try insert (in case user has no role)
-        const { error: insertError } = await supabase
+      if (deleteError) {
+        console.error("Error deleting old roles:", deleteError);
+        // Continue anyway - user might not have any roles yet
+      }
+
+      // Insert the new role
+      const { error: insertError } = await supabase
         .from("user_roles")
         .insert({ user_id: user.id, role });
 
-        if (insertError) {
-          // If insert also fails, try update (in case user already has a role)
-          const { error: updateError } = await supabase
-            .from("user_roles")
-            .update({ role })
-            .eq("user_id", user.id);
-          
-          if (updateError) throw updateError;
-        }
+      if (insertError) {
+        console.error("Error inserting new role:", insertError);
+        throw insertError;
       }
 
+      console.log("[RoleSelection] Role successfully set to:", role);
+
+      // Wait a bit to ensure the database has updated
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       toast.success(`Welcome ${role}!`);
-      // Reload the page to refresh auth context
-      window.location.href = role === "client" ? "/dashboard" : "/operator";
+      
+      // Navigate using window.location for full page reload to refresh auth context
+      const targetPath = role === "client" ? "/dashboard" : "/operator";
+      console.log("[RoleSelection] Redirecting to:", targetPath);
+      window.location.href = targetPath;
     } catch (error: any) {
       console.error("Role selection error:", error);
-      toast.error(error.message || "Failed to set role. Please contact support.");
-    } finally {
+      toast.error(error.message || "Failed to set role. Please try again.");
       setLoading(false);
     }
   };

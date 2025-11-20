@@ -56,10 +56,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
-        .single();
+        .order("created_at", { ascending: false })
+        .limit(1);
 
       if (error) throw error;
-      setUserRole(data?.role || null);
+      
+      // Get the most recent role (in case user has multiple)
+      const role = data && data.length > 0 ? data[0].role : null;
+      setUserRole(role);
+      
+      console.log("[AuthContext] User role loaded:", role);
     } catch (error) {
       console.error("Error fetching user role:", error);
       setUserRole(null);
