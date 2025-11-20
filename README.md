@@ -37,12 +37,12 @@ SkyLink follows a three-tier architecture:
 - **4G/5G Connectivity**: Internet connection via mobile network
 - **MAVProxy Bridge**: Lightweight script connecting CubePilot to central server
 
-### Step 2: Central Server (Core Brain)
-- **Location**: Runs 24/7 on cloud infrastructure (Railway recommended)
+### Step 2: Backend API (Vercel Serverless Functions)
+- **Location**: Vercel Serverless Functions (same deployment as frontend)
 - **REST API**: Mission management endpoints
 - **Event Streaming**: Server-Sent Events (SSE) for real-time updates
-- **Mission Store**: In-memory mission tracking with status management
-- **Note**: Telemetry and drone control handled by separate server
+- **Database**: Supabase PostgreSQL for persistent storage
+- **Note**: All backend logic runs as serverless functions, no separate server needed
 
 ### Step 3: Client Application (Web/Mobile)
 - **Client Dashboard**: Request deliveries, track missions, view history
@@ -71,7 +71,7 @@ SkyLink follows a three-tier architecture:
 
 ### Deployment
 - **Frontend**: Vercel (automatic deployments from GitHub)
-- **Backend**: Railway (recommended) or Render
+- **Backend API**: Vercel Serverless Functions (same deployment)
 - **Database**: Supabase (PostgreSQL with RLS)
 
 ## Getting Started
@@ -95,72 +95,58 @@ SkyLink follows a three-tier architecture:
    npm install
    ```
 
-3. **Install backend dependencies**
-   ```bash
-   cd server
-   npm install
-   cd ..
-   ```
-
-4. **Configure environment variables**
+2. **Configure environment variables**
    
-   Create a `.env` file in the root directory:
+   Create a `.env.local` file in the root directory:
    ```env
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_CORE_API_URL=http://localhost:4000
    ```
    
-   Create a `.env` file in the `server` directory:
-   ```env
-   PORT=4000
-   ```
+   **Note**: For local development, API routes will be available at `/api/*` when using `vercel dev`
 
 ### Running the Application
 
 #### Development Mode
 
-1. **Start the core server** (Terminal 1)
-   ```bash
-   cd server
-   npm run dev
-   ```
-   Server will start on `http://localhost:4000`
+**Option 1: Using Vite (Frontend only, API routes won't work)**
+```bash
+npm run dev
+```
+Application will start on `http://localhost:5173`
 
-2. **Start the frontend** (Terminal 2)
-   ```bash
-   npm run dev
-   ```
-   Application will start on `http://localhost:5173`
+**Option 2: Using Vercel CLI (Recommended - Full stack)**
+```bash
+# Install Vercel CLI if not already installed
+npm i -g vercel
+
+# Run development server
+vercel dev
+```
+This will start both frontend and API routes on `http://localhost:3000`
 
 #### Production Build
 
-1. **Build the frontend**
-   ```bash
-   npm run build
-   ```
-
-2. **Build the backend**
-   ```bash
-   cd server
-   npm run build
-   npm start
-   ```
+```bash
+npm run build
+```
+The build output in `dist/` can be deployed to Vercel, which will automatically handle API routes.
 
 ## Project Structure
 
 ```
 skylink-dispatch/
+├── api/                         # Vercel Serverless Functions (Backend API)
+│   ├── _supabase.ts            # Supabase helper utilities
+│   ├── missions/               # Mission management endpoints
+│   ├── telemetry/              # Telemetry endpoints
+│   ├── commands.ts             # Drone command endpoints
+│   └── video/                  # Video streaming endpoints
 ├── public/
 │   ├── logo-final.png          # Main logo asset
 │   └── robots.txt
-├── server/                      # Core server (Step 2)
-│   ├── src/
-│   │   ├── index.ts            # Express server entry point
-│   │   ├── missionStore.ts    # Mission state management
-│   │   └── types.ts            # TypeScript definitions
-│   ├── package.json
-│   └── tsconfig.json
 ├── src/
 │   ├── components/             # React components
 │   │   ├── ui/                # shadcn/ui components
@@ -193,81 +179,76 @@ skylink-dispatch/
 
 ## API Endpoints
 
-### Core Server (Port 4000)
+All endpoints are available at `/api/*` when deployed to Vercel.
 
-- `GET /health` - Health check
-- `GET /api/missions` - List all missions
+### Missions
+- `GET /api/missions` - List all missions/deliveries
+- `POST /api/missions` - Create new mission (requires auth)
 - `GET /api/missions/active` - List active missions
-- `POST /api/missions` - Create new mission
-- `POST /api/missions/:id/assign` - Assign mission to operator
-- `POST /api/missions/:id/status` - Update mission status
-- `GET /api/telemetry/latest` - Get latest telemetry frames
-- `GET /api/telemetry/stream` - SSE stream of telemetry updates
-- `POST /api/telemetry/mock` - Inject mock telemetry (testing)
-- `POST /api/commands` - Send command to drone
+- `POST /api/missions/[id]/assign` - Assign mission to operator (requires operator role)
+- `POST /api/missions/[id]/status` - Update mission status (requires auth)
 
-## Testing Telemetry
+### Telemetry
+- `GET /api/telemetry/latest` - Get latest telemetry for all drones
+- `GET /api/telemetry/stream` - SSE stream of real-time telemetry
 
-To test the real-time telemetry system:
+### Commands
+- `POST /api/commands` - Send command to drone (requires auth)
 
-1. Start both servers (frontend and backend)
-2. Send a mock telemetry packet:
-   ```bash
-   curl -X POST http://localhost:4000/api/telemetry/mock \
-     -H "Content-Type: application/json" \
-     -d '{
-       "droneId": "demo-drone-1",
-       "battery": 84,
-       "latitude": 14.7167,
-       "longitude": -17.4677,
-       "altitude": 150,
-       "speed": 18,
-       "heading": 72,
-       "signalQuality": 92,
-       "status": "in-flight"
-     }'
-   ```
-3. Open the dashboard or pilot control room to see live updates
+### Video
+- `GET /api/video/stream/[droneId]` - Get video stream URL (requires auth)
+- `GET /api/video/webrtc/[droneId]` - Get WebRTC connection info (requires auth)
+
+### Health
+- `GET /api/health` - Health check
+- `GET /api` - API info
+
+**Note**: See [VERCEL_BACKEND_SETUP.md](./VERCEL_BACKEND_SETUP.md) for detailed API documentation.
+
+## Testing
+
+### Local Development
+Use Vercel CLI for full-stack development:
+```bash
+vercel dev
+```
+
+### Testing API Endpoints
+```bash
+# Health check
+curl http://localhost:3000/api/health
+
+# List missions (requires auth token)
+curl http://localhost:3000/api/missions \
+  -H "Authorization: Bearer YOUR_SUPABASE_TOKEN"
+```
 
 ## Deployment
 
-### Backend Deployment (Railway - Recommended)
+### Deploy to Vercel (Everything in One Place)
 
-See [RAILWAY_SETUP.md](./RAILWAY_SETUP.md) for detailed instructions.
+**Everything runs on Vercel - no separate backend server needed!**
 
-**Quick Steps:**
-1. Sign up at [railway.app](https://railway.app)
-2. Create new project → Deploy from GitHub
-3. Set root directory to `server`
-4. Railway auto-detects build/start commands
-5. Get your Railway URL (e.g., `https://skylink-production.up.railway.app`)
-6. Set `VITE_CORE_API_URL` in Vercel to your Railway URL
+1. **Connect Repository to Vercel**
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub/GitLab repository
+   - Vercel will auto-detect the project
 
-### Frontend Deployment
+2. **Set Environment Variables**
+   In Vercel dashboard → Settings → Environment Variables:
+   ```
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
 
-The frontend can be deployed to:
-- Vercel
-- Netlify
-- AWS Amplify
-- Any static hosting service
+3. **Deploy**
+   - Push to main branch → Vercel auto-deploys
+   - API routes available at `https://your-domain.vercel.app/api/*`
+   - Frontend at `https://your-domain.vercel.app`
 
-Set the `VITE_CORE_API_URL` environment variable to point to your deployed core server.
-
-### Backend Deployment
-
-The core server can be deployed to:
-- Fly.io
-- Render
-- Railway
-- AWS EC2
-- DigitalOcean
-- Any Node.js-compatible hosting
-
-Ensure the server has:
-- Persistent connection (24/7 uptime)
-- Public IP address or domain
-- Environment variables configured
-- Note: This server handles mission management only. Telemetry and drone control are handled separately.
+**That's it!** No separate backend hosting needed. See [VERCEL_BACKEND_SETUP.md](./VERCEL_BACKEND_SETUP.md) for detailed setup instructions.
 
 ## Contributing
 

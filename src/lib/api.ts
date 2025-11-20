@@ -37,6 +37,17 @@ const handleResponse = async (res: Response) => {
   return res.json();
 };
 
+// Helper to get auth token from Supabase session
+async function getAuthToken(): Promise<string | null> {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
 const safeFetch = async <T>(url: string, options?: RequestInit, defaultValue?: T): Promise<T> => {
   let timeoutId: NodeJS.Timeout | null = null;
   try {
@@ -46,8 +57,16 @@ const safeFetch = async <T>(url: string, options?: RequestInit, defaultValue?: T
       timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     }
     
+    // Get auth token and add to headers if available
+    const token = await getAuthToken();
+    const headers = new Headers(options?.headers);
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    
     const res = await fetch(url, {
       ...options,
+      headers,
       signal: controller?.signal || options?.signal,
     });
     
