@@ -1,24 +1,49 @@
 import { BottomNav } from "@/components/BottomNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, MapPin, Calendar, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Package, MapPin, Calendar, Loader2, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDeliveries } from "@/hooks/useDeliveries";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 export default function History() {
   const { user, userRole } = useAuth();
   const { deliveries, loading } = useDeliveries(user?.id, userRole);
+  const navigate = useNavigate();
 
   const getStatusColor = (status: string) => {
     return status === "delivered" ? "bg-emerald-500 text-white" : "bg-red-500 text-white";
   };
 
+  const goBack = () => {
+    if (userRole === "operator") {
+      navigate("/operator");
+    } else if (userRole === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
-        <h1 className="text-2xl font-bold">Delivery History</h1>
-        <p className="text-white/90 mt-1">Your past deliveries</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={goBack}
+            className="text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Delivery History</h1>
+            <p className="text-white/90 mt-1">Your past deliveries</p>
+          </div>
+        </div>
       </header>
 
       <main className="p-4 space-y-4 max-w-4xl mx-auto">

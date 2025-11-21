@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Plane, Package, Activity, Settings, Coins, TrendingUp, AlertCircle, LogOut } from "lucide-react";
+import { Users, Plane, Package, Activity, Settings, Coins, TrendingUp, AlertCircle, LogOut, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { coreApi } from "@/lib/api";
 import { LiveMap } from "@/components/LiveMap";
@@ -22,6 +23,7 @@ interface Stats {
 
 export default function AdminDashboard() {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     activeDrones: 0,
@@ -107,7 +109,15 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 mb-2">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/select-role")}
+              className="text-white hover:bg-white/20"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <button
               type="button"
               onClick={() => window.location.href = "/admin"}

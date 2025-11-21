@@ -13,6 +13,7 @@ import {
   MapPin, 
   Package, 
   ArrowRight, 
+  ArrowLeft,
   Coins, 
   AlertCircle, 
   Clock, 
@@ -292,9 +293,19 @@ export default function CreateDelivery() {
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold">New Delivery Request</h1>
-          <p className="text-white/90 mt-1">Create a detailed delivery request for your package</p>
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/dashboard")}
+            className="text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">New Delivery Request</h1>
+            <p className="text-white/90 mt-1">Create a detailed delivery request for your package</p>
+          </div>
         </div>
       </header>
 

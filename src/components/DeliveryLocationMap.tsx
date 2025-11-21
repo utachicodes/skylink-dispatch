@@ -494,37 +494,37 @@ export function DeliveryLocationMap({
 
       {/* Enhanced Instructions */}
       <div className="grid md:grid-cols-3 gap-3">
-        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-xl border border-blue-200 dark:border-blue-800">
-          <div className="bg-blue-600 p-2 rounded-lg">
-            <MapPin className="h-5 w-5 text-white" />
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+          <div className="bg-white p-2 rounded-lg shrink-0">
+            <MapPin className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <h4 className="font-semibold text-sm mb-1">1. Select Location Type</h4>
-            <p className="text-xs text-muted-foreground">
+            <h4 className="font-bold text-sm mb-1 text-white">1. Select Location Type</h4>
+            <p className="text-xs text-white/90">
               Click "Set Pickup" or "Set Dropoff" button
             </p>
           </div>
         </div>
         
-        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-xl border border-green-200 dark:border-green-800">
-          <div className="bg-green-600 p-2 rounded-lg">
-            <Navigation className="h-5 w-5 text-white" />
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
+          <div className="bg-white p-2 rounded-lg shrink-0">
+            <Navigation className="h-5 w-5 text-green-600" />
           </div>
           <div>
-            <h4 className="font-semibold text-sm mb-1">2. Click on Map</h4>
-            <p className="text-xs text-muted-foreground">
+            <h4 className="font-bold text-sm mb-1 text-white">2. Click on Map</h4>
+            <p className="text-xs text-white/90">
               Place marker at desired location
             </p>
           </div>
         </div>
         
-        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-xl border border-purple-200 dark:border-purple-800">
-          <div className="bg-purple-600 p-2 rounded-lg">
-            <Route className="h-5 w-5 text-white" />
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+          <div className="bg-white p-2 rounded-lg shrink-0">
+            <Route className="h-5 w-5 text-purple-600" />
           </div>
           <div>
-            <h4 className="font-semibold text-sm mb-1">3. Adjust if Needed</h4>
-            <p className="text-xs text-muted-foreground">
+            <h4 className="font-bold text-sm mb-1 text-white">3. Adjust if Needed</h4>
+            <p className="text-xs text-white/90">
               Drag markers to fine-tune positions
             </p>
           </div>

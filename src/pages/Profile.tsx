@@ -2,15 +2,17 @@ import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, LogOut, Shield, Coins } from "lucide-react";
+import { User, Mail, Phone, LogOut, Shield, Coins, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const { user, userRole, signOut } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -34,11 +36,33 @@ export default function Profile() {
     loadProfile();
   }, [user]);
 
+  const goBack = () => {
+    if (userRole === "operator") {
+      navigate("/operator");
+    } else if (userRole === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <header className="bg-sky-gradient text-white p-6 shadow-lg">
-        <h1 className="text-2xl font-bold">Profile</h1>
-        <p className="text-white/90 mt-1">Manage your account</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={goBack}
+            className="text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold">Profile</h1>
+            <p className="text-white/90 mt-1">Manage your account</p>
+          </div>
+        </div>
       </header>
 
       <main className="p-4 space-y-6 max-w-2xl mx-auto">
