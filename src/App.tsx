@@ -13,7 +13,7 @@ import CreateDelivery from "./pages/CreateDelivery";
 import TrackDelivery from "./pages/TrackDelivery";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
-import OperatorDashboard from "./pages/OperatorDashboard";
+import EnhancedOperatorDashboard from "./pages/EnhancedOperatorDashboard";
 import PilotControl from "./pages/PilotControl";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
@@ -32,13 +32,13 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/select-role" element={<ProtectedRoute><RoleSelection /></ProtectedRoute>} />
             
-            <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["client"]}><Dashboard /></ProtectedRoute>} />
-            <Route path="/create-delivery" element={<ProtectedRoute allowedRoles={["client"]}><CreateDelivery /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["client", "operator"]}><Dashboard /></ProtectedRoute>} />
+            <Route path="/create-delivery" element={<ProtectedRoute allowedRoles={["client", "operator"]}><CreateDelivery /></ProtectedRoute>} />
             <Route path="/track/:id" element={<ProtectedRoute><TrackDelivery /></ProtectedRoute>} />
-            <Route path="/history" element={<ProtectedRoute allowedRoles={["client"]}><History /></ProtectedRoute>} />
+            <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             
-            <Route path="/operator" element={<ProtectedRoute allowedRoles={["operator"]}><OperatorDashboard /></ProtectedRoute>} />
+            <Route path="/operator" element={<ProtectedRoute allowedRoles={["operator"]}><EnhancedOperatorDashboard /></ProtectedRoute>} />
             <Route path="/pilot/mission/:missionId" element={<ProtectedRoute allowedRoles={["operator"]}><PilotControl /></ProtectedRoute>} />
             <Route path="/pilot/delivery/:deliveryId" element={<ProtectedRoute allowedRoles={["operator"]}><PilotControl /></ProtectedRoute>} />
             <Route path="/pilot/:missionId" element={<ProtectedRoute allowedRoles={["operator"]}><PilotControl /></ProtectedRoute>} />

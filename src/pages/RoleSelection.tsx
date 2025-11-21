@@ -20,7 +20,6 @@ export default function RoleSelection() {
       console.log("[RoleSelection] Setting role to:", role);
       
       // Use the secure database function to set role
-      // This bypasses RLS restrictions
       const { error } = await supabase.rpc("set_user_role", {
         _role: role,
       });
@@ -32,12 +31,12 @@ export default function RoleSelection() {
 
       console.log("[RoleSelection] Role successfully set to:", role);
 
-      // Wait a bit to ensure the database has updated
+      // Wait for database update
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      toast.success(`Welcome ${role}!`);
+      toast.success(`Welcome ${role === "operator" ? "Operator" : "Client"}!`);
       
-      // Navigate using window.location for full page reload to refresh auth context
+      // Navigate based on role
       const targetPath = role === "client" ? "/dashboard" : "/operator";
       console.log("[RoleSelection] Redirecting to:", targetPath);
       window.location.href = targetPath;
@@ -56,59 +55,84 @@ export default function RoleSelection() {
       <div className="relative z-10 w-full max-w-4xl">
         <div className="text-center mb-8">
           <img src="/logo-final.png" alt="SkyLink" className="h-16 mx-auto mb-4 animate-logo-glow" />
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome to SkyLink</h1>
-          <p className="text-white/70">Choose how you want to use the platform</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to SkyLink</h1>
+          <p className="text-muted-foreground">Choose your primary role to get started</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all">
+          <Card className="bg-card/80 border-border backdrop-blur-sm hover:border-primary/50 transition-all group">
             <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-primary" />
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Users className="h-7 w-7 text-primary" />
               </div>
-              <CardTitle className="text-white">I'm a Client</CardTitle>
-              <CardDescription className="text-white/70">
+              <CardTitle className="text-foreground">I'm a Client</CardTitle>
+              <CardDescription>
                 Request drone deliveries to hard-to-reach places
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 mb-6 text-sm text-white/80">
-                <li>• Create delivery requests</li>
-                <li>• Track deliveries in real-time</li>
-                <li>• View delivery history</li>
-                <li>• Manage your profile</li>
+              <ul className="space-y-2 mb-6 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Create delivery requests
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Track deliveries in real-time
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  View delivery history
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Manage your profile
+                </li>
               </ul>
               <Button
                 onClick={() => selectRole("client")}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-primary to-accent text-black font-semibold"
+                className="w-full"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue as Client"}
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
-                <RadioTower className="h-6 w-6 text-accent" />
+          <Card className="bg-card/80 border-border backdrop-blur-sm hover:border-primary/50 transition-all group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/20 to-transparent blur-3xl" />
+            <CardHeader className="relative">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <RadioTower className="h-7 w-7 text-primary" />
               </div>
-              <CardTitle className="text-white">I'm an Operator</CardTitle>
-              <CardDescription className="text-white/70">
-                Operate drones and earn from deliveries
+              <CardTitle className="text-foreground">I'm an Operator</CardTitle>
+              <CardDescription>
+                Operate drones and earn from deliveries (can also act as client)
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 mb-6 text-sm text-white/80">
-                <li>• Accept delivery requests</li>
-                <li>• Control drones remotely</li>
-                <li>• View live camera feeds</li>
-                <li>• Track earnings</li>
+            <CardContent className="relative">
+              <ul className="space-y-2 mb-6 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Accept & fulfill delivery requests
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Control drones remotely
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Access to live camera feeds
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Track earnings & request deliveries
+                </li>
               </ul>
               <Button
                 onClick={() => selectRole("operator")}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-accent to-primary text-black font-semibold"
+                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue as Operator"}
               </Button>
