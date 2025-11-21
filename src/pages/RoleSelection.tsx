@@ -120,7 +120,7 @@ export default function RoleSelection() {
               </div>
               <CardTitle className="text-foreground">I'm an Operator</CardTitle>
               <CardDescription>
-                Operate drones and earn from deliveries (can also act as client)
+                Operate drones and earn from deliveries
               </CardDescription>
             </CardHeader>
             <CardContent className="relative">

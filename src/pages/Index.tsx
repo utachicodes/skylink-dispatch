@@ -77,13 +77,23 @@ const industries = [
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userRole, loading } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
+    if (loading) return; // Wait for role to load
+    
+    if (user && userRole) {
+      // Redirect to appropriate dashboard based on role
+      const targetPath = 
+        userRole === "operator" ? "/operator" :
+        userRole === "admin" ? "/admin" :
+        "/dashboard";
+      navigate(targetPath);
+    } else if (user && !userRole) {
+      // User logged in but no role
+      navigate("/select-role");
     }
-  }, [user, navigate]);
+  }, [user, userRole, loading, navigate]);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(32,36,48,0.9),_rgba(5,6,10,1))] text-foreground">

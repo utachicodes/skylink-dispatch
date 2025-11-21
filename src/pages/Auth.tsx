@@ -16,13 +16,25 @@ export default function Auth() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userRole, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    if (authLoading) return; // Wait for role to load
+    
+    if (user && userRole) {
+      // User has a role, redirect to their dashboard
+      console.log("[Auth] User logged in with role:", userRole);
+      const targetPath = 
+        userRole === "operator" ? "/operator" :
+        userRole === "admin" ? "/admin" :
+        "/dashboard";
+      navigate(targetPath);
+    } else if (user && !userRole) {
+      // User logged in but no role, go to role selection
+      console.log("[Auth] User logged in, no role - redirecting to role selection");
       navigate("/select-role");
     }
-  }, [user, navigate]);
+  }, [user, userRole, authLoading, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
