@@ -30,16 +30,10 @@ export default function RoleSelection() {
       }
 
       console.log("[RoleSelection] Role successfully set to:", role);
-
-      // Wait for database update
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       toast.success(`Welcome ${role === "operator" ? "Operator" : "Client"}!`);
       
-      // Navigate based on role
-      const targetPath = role === "client" ? "/dashboard" : "/operator";
-      console.log("[RoleSelection] Redirecting to:", targetPath);
-      window.location.href = targetPath;
+      // Force reload to update auth context
+      window.location.href = role === "client" ? "/dashboard" : "/operator";
     } catch (error: any) {
       console.error("Role selection error:", error);
       toast.error(error.message || "Failed to set role. Please try again.");
