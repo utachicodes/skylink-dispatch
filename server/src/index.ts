@@ -2,14 +2,19 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { MissionStore } from "./missionStore.js";
+import { MavlinkServer } from "./mavlinkServer.js";
 import type { MissionPayload } from "./types.js";
 
 dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
+const mavlinkPort = Number(process.env.MAVLINK_UDP_PORT || 5761);
 
 const missionStore = new MissionStore();
+
+// Initialize MAVLink server
+const mavlinkServer = new MavlinkServer(mavlinkPort);
 
 app.use(cors());
 app.use(express.json());
@@ -83,10 +88,10 @@ app.post("/api/missions/:id/status", async (req, res) => {
   res.json(mission);
 });
 
-// Telemetry endpoints - simplified (no MAVLink)
+// Telemetry endpoints - connected to MAVLink server
 app.get("/api/telemetry/latest", (_req, res) => {
-  // Return empty array - telemetry will be handled by your separate server
-  res.json([]);
+  const telemetry = mavlinkServer.getLatestTelemetry();
+  res.json(telemetry);
 });
 
 app.get("/api/telemetry/stream", (req, res) => {
@@ -116,9 +121,22 @@ app.post("/api/telemetry/mock", (req, res) => {
 });
 
 app.post("/api/commands", (req, res) => {
-  // Command endpoint - accepts but doesn't process
-  // Commands will be handled by your separate server
-  res.json({ status: "accepted (commands handled by separate server)" });
+  const { droneId, type, payload } = req.body;
+  
+  if (!droneId || !type) {
+    return res.status(400).json({ error: "droneId and type are required" });
+  }
+
+  try {
+    // Convert command to MAVLink format
+    const commandJson = JSON.stringify({ type, payload });
+    const commandBuffer = Buffer.from(commandJson);
+    
+    mavlinkServer.sendCommand(droneId, commandBuffer);
+    res.json({ status: "accepted", droneId, type });
+  } catch (error: any) {
+    res.status(404).json({ error: error.message || "Drone not connected" });
+  }
 });
 
 // Video streaming endpoints
@@ -153,8 +171,9 @@ app.get("/api/video/webrtc/:droneId", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`[SkyLink Core] listening on port ${port}`);
+  console.log(`[SkyLink Core] HTTP API listening on port ${port}`);
+  console.log(`[SkyLink Core] MAVLink UDP server listening on port ${mavlinkPort}`);
   console.log(`[SkyLink Core] Mission management API ready`);
-  console.log(`[SkyLink Core] Telemetry and commands handled by separate server`);
+  console.log(`[SkyLink Core] MAVLink gateway active`);
 });
 
