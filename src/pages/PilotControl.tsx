@@ -211,37 +211,51 @@ export default function PilotControl() {
           <div className="grid grid-cols-2 gap-4">
             <Card className="bg-gray-900 border-primary/20">
               <CardContent className="p-4">
-                <h3 className="text-sm font-semibold mb-3 text-center">Altitude & Yaw</h3>
-                <div className="relative w-full aspect-square max-w-[200px] mx-auto">
-                  <div className="absolute inset-0 border-2 border-primary/30 rounded-full"></div>
-                  <div className="absolute inset-4 border border-primary/20 rounded-full"></div>
+                <h3 className="text-sm font-semibold mb-3 text-center">Altitude & Rotation</h3>
+                <div className="grid grid-cols-2 gap-2">
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-0 left-1/2 -translate-x-1/2 text-white hover:bg-primary/20"
+                    onMouseDown={() => sendManualControl({ throttle: 0.5 })}
+                    onMouseUp={() => sendManualControl({ throttle: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-primary/20 hover:bg-primary/40"
                   >
-                    <ArrowUp className="h-6 w-6" />
+                    <div className="flex flex-col items-center">
+                      <ArrowUp className="h-5 w-5" />
+                      <span className="text-xs">Climb</span>
+                    </div>
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 text-white hover:bg-primary/20"
+                    onMouseDown={() => sendManualControl({ yaw: 0.3 })}
+                    onMouseUp={() => sendManualControl({ yaw: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-primary/20 hover:bg-primary/40"
                   >
-                    <ArrowDown className="h-6 w-6" />
+                    <div className="flex flex-col items-center">
+                      <RotateCcw className="h-5 w-5 scale-x-[-1]" />
+                      <span className="text-xs">Turn Right</span>
+                    </div>
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 text-white hover:bg-primary/20"
+                    onMouseDown={() => sendManualControl({ throttle: -0.5 })}
+                    onMouseUp={() => sendManualControl({ throttle: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-primary/20 hover:bg-primary/40"
                   >
-                    <RotateCcw className="h-6 w-6" />
+                    <div className="flex flex-col items-center">
+                      <ArrowDown className="h-5 w-5" />
+                      <span className="text-xs">Descend</span>
+                    </div>
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-white hover:bg-primary/20"
+                    onMouseDown={() => sendManualControl({ yaw: -0.3 })}
+                    onMouseUp={() => sendManualControl({ yaw: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-primary/20 hover:bg-primary/40"
                   >
-                    <RotateCcw className="h-6 w-6 scale-x-[-1]" />
+                    <div className="flex flex-col items-center">
+                      <RotateCcw className="h-5 w-5" />
+                      <span className="text-xs">Turn Left</span>
+                    </div>
                   </Button>
                 </div>
               </CardContent>
@@ -249,37 +263,53 @@ export default function PilotControl() {
 
             <Card className="bg-gray-900 border-primary/20">
               <CardContent className="p-4">
-                <h3 className="text-sm font-semibold mb-3 text-center">Direction</h3>
-                <div className="relative w-full aspect-square max-w-[200px] mx-auto">
-                  <div className="absolute inset-0 border-2 border-accent/30 rounded-full"></div>
-                  <div className="absolute inset-4 border border-accent/20 rounded-full"></div>
+                <h3 className="text-sm font-semibold mb-3 text-center">Movement</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  <div></div>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-0 left-1/2 -translate-x-1/2 text-white hover:bg-accent/20"
+                    onMouseDown={() => sendManualControl({ pitch: 0.5 })}
+                    onMouseUp={() => sendManualControl({ pitch: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-accent/20 hover:bg-accent/40"
                   >
-                    <ArrowUp className="h-6 w-6" />
+                    <div className="flex flex-col items-center">
+                      <ArrowUp className="h-5 w-5" />
+                      <span className="text-xs">Forward</span>
+                    </div>
+                  </Button>
+                  <div></div>
+                  <Button
+                    onMouseDown={() => sendManualControl({ roll: -0.5 })}
+                    onMouseUp={() => sendManualControl({ roll: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-accent/20 hover:bg-accent/40"
+                  >
+                    <div className="flex flex-col items-center">
+                      <ArrowLeft className="h-5 w-5" />
+                      <span className="text-xs">Left</span>
+                    </div>
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 text-white hover:bg-accent/20"
+                    onMouseDown={() => sendManualControl({ pitch: -0.5 })}
+                    onMouseUp={() => sendManualControl({ pitch: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-accent/20 hover:bg-accent/40"
                   >
-                    <ArrowDown className="h-6 w-6" />
+                    <div className="flex flex-col items-center">
+                      <ArrowDown className="h-5 w-5" />
+                      <span className="text-xs">Back</span>
+                    </div>
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 text-white hover:bg-accent/20"
+                    onMouseDown={() => sendManualControl({ roll: 0.5 })}
+                    onMouseUp={() => sendManualControl({ roll: 0 })}
+                    disabled={!drone}
+                    className="h-16 bg-accent/20 hover:bg-accent/40"
                   >
-                    <ArrowLeft className="h-6 w-6" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-white hover:bg-accent/20"
-                  >
-                    <ArrowRight className="h-6 w-6" />
+                    <div className="flex flex-col items-center">
+                      <ArrowRight className="h-5 w-5" />
+                      <span className="text-xs">Right</span>
+                    </div>
                   </Button>
                 </div>
               </CardContent>
@@ -421,5 +451,24 @@ export default function PilotControl() {
       .then(() => toast.success("Command sent"))
       .catch((error) => toast.error(error?.message || "Failed"))
       .finally(() => setCommandType(null));
+  }
+
+  function sendManualControl(controls: { roll?: number; pitch?: number; yaw?: number; throttle?: number }) {
+    if (!drone) return;
+    
+    coreApi.sendCommand({
+      droneId: drone.droneId,
+      type: "CUSTOM",
+      payload: {
+        mode: "MANUAL_CONTROL",
+        roll: controls.roll || 0,
+        pitch: controls.pitch || 0,
+        yaw: controls.yaw || 0,
+        throttle: controls.throttle || 0,
+        timestamp: Date.now(),
+      },
+    }).catch((error) => {
+      console.error("Manual control error:", error);
+    });
   }
 }
