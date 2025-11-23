@@ -34,18 +34,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .eq('id', droneId)
       .single();
 
-    if (droneError || !drone) {
-      return res.status(404).json({ error: "Drone not found" });
+    // Check environment variable for video URL (format: VIDEO_URL_drone-001)
+    const envVideoUrl = process.env[`VIDEO_URL_${droneId}`] || 
+                        process.env[`VIDEO_URL_${droneId.replace(/-/g, '_')}`];
+
+    // Priority: Database > Environment Variable > Default MJPEG feed
+    let streamUrl = drone?.camera_stream_url || envVideoUrl;
+    let streamType = 'http';
+    
+    // If no URL specified, use Jetson MJPEG feed (always available, non-censored)
+    if (!streamUrl) {
+      const JETSON_IP = process.env.JETSON_IP || '172.24.237.66';
+      const JETSON_PORT = process.env.JETSON_PORT || '5000';
+      streamUrl = `http://${JETSON_IP}:${JETSON_PORT}/video_feed`;
+      streamType = 'mjpeg';
+    }
+    // If RTSP, try to convert to HTTP HLS (assuming Jetson converts it)
+    else if (streamUrl.startsWith('rtsp://')) {
+      const rtspMatch = streamUrl.match(/rtsp:\/\/([^:]+):(\d+)\/(.+)/);
+      if (rtspMatch) {
+        const [, host, , path] = rtspMatch;
+        // Try HLS conversion first
+        streamUrl = `http://${host}:5000/hls/${path}.m3u8`;
+        streamType = 'hls';
+      }
+    }
+    // If it's the MJPEG feed endpoint
+    else if (streamUrl.includes('/video_feed')) {
+      streamType = 'mjpeg';
+    }
+    // Determine type from URL
+    else if (streamUrl.includes('.m3u8')) {
+      streamType = 'hls';
+    } else if (streamUrl.startsWith('rtsp://')) {
+      streamType = 'rtsp';
     }
 
-    // Return stream URL if available, otherwise return placeholder
     res.json({
       droneId,
-      streamUrl: drone.camera_stream_url || `https://via.placeholder.com/640x360?text=Drone+${droneId.slice(0, 8)}`,
-      status: drone.is_active ? 'active' : 'inactive',
+      streamUrl,
+      type: streamType,
+      status: drone?.is_active ? 'active' : 'inactive',
     });
   } catch (error: any) {
     console.error('[API] Error fetching video stream:', error);
     res.status(500).json({ error: error.message || 'Failed to fetch video stream' });
   }
 }
+

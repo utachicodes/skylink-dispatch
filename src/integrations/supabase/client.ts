@@ -2,13 +2,29 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Support both URL and Project ID formats
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 
+  (import.meta.env.VITE_SUPABASE_PROJECT_ID 
+    ? `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`
+    : null);
+// Support both naming conventions
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+// Validate environment variables
+if (!SUPABASE_URL) {
+  console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_PROJECT_ID environment variable');
+  throw new Error('Missing Supabase URL. Please set either VITE_SUPABASE_URL or VITE_SUPABASE_PROJECT_ID in your .env file.');
+}
+
+if (!SUPABASE_ANON_KEY) {
+  console.error('Missing VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY environment variable');
+  throw new Error('Missing Supabase anon key. Please check your .env file and ensure VITE_SUPABASE_PUBLISHABLE_KEY is set.');
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage: localStorage,
     persistSession: true,

@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { VideoCall } from "@/components/VideoCall";
+import { Phone } from "lucide-react";
 
 export default function EnhancedOperatorDashboard() {
   const { user, userRole, signOut } = useAuth();
@@ -25,6 +27,8 @@ export default function EnhancedOperatorDashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [videoCallOpen, setVideoCallOpen] = useState(false);
+  const [videoCallDeliveryId, setVideoCallDeliveryId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || !userRole) return;
@@ -213,10 +217,23 @@ export default function EnhancedOperatorDashboard() {
           )}
           
           {delivery.operator_id === user?.id && (delivery.status === "confirmed" || delivery.status === "in_flight") && (
-            <Button size="sm" onClick={() => navigate(`/pilot/delivery/${delivery.id}`)}>
-              Control
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  setVideoCallDeliveryId(delivery.id);
+                  setVideoCallOpen(true);
+                }}
+              >
+                <Phone className="h-4 w-4 mr-1" />
+                Call Client
+              </Button>
+              <Button size="sm" onClick={() => navigate(`/pilot/delivery/${delivery.id}`)}>
+                Control
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
           )}
         </div>
       </CardContent>
@@ -490,6 +507,20 @@ export default function EnhancedOperatorDashboard() {
       </main>
 
       <BottomNav />
+      
+      {/* Video Call Modal */}
+      {videoCallOpen && videoCallDeliveryId && (
+        <VideoCall
+          isOpen={videoCallOpen}
+          onClose={() => {
+            setVideoCallOpen(false);
+            setVideoCallDeliveryId(null);
+          }}
+          peerId={user?.id || ""}
+          role="operator"
+          deliveryId={videoCallDeliveryId}
+        />
+      )}
     </div>
   );
 }

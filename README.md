@@ -97,12 +97,21 @@ SkyLink follows a three-tier architecture:
 
 2. **Configure environment variables**
    
-   Create a `.env.local` file in the root directory:
+   See `ENV_SETUP.md` for complete environment variable setup guide.
+   
+   Create a `.env.local` file in the root directory with:
    ```env
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   # Supabase
+   VITE_SUPABASE_PROJECT_ID=your_project_id
+   VITE_SUPABASE_ANON_KEY=your_anon_key
+   
+   # Jetson Server
+   VITE_CORE_API_URL=http://172.24.237.66:5000
+   
+   # Stream.io Video Calling
+   VITE_STREAM_API_KEY=your_stream_api_key
+   STREAM_API_KEY=your_stream_api_key
+   STREAM_API_SECRET=your_stream_api_secret
    ```
    
    **Note**: For local development, API routes will be available at `/api/*` when using `vercel dev`

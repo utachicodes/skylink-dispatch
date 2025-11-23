@@ -68,7 +68,7 @@ Complete guide to connect your drone (CubePilot Orange + Jetson Orion) to SkyLin
 
 SSH into your Jetson Orion:
 ```bash
-ssh jetson@<jetson-ip-address>
+
 ```
 
 ### 1.2 Install Dependencies

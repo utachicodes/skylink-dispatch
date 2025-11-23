@@ -4,17 +4,21 @@ import { BottomNav } from "@/components/BottomNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, ArrowLeft, Loader2 } from "lucide-react";
+import { MapPin, ArrowLeft, Loader2, Phone } from "lucide-react";
 import { deliveryService } from "@/lib/deliveryService";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { LiveMap } from "@/components/LiveMap";
+import { VideoCall } from "@/components/VideoCall";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function TrackDelivery() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [delivery, setDelivery] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [videoCallOpen, setVideoCallOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -88,11 +92,33 @@ export default function TrackDelivery() {
                   <p className="font-medium">{delivery.estimated_time} minutes</p>
                 </div>
               )}
+              {delivery.operator_id && (delivery.status === "confirmed" || delivery.status === "in_flight") && (
+                <div className="pt-4 border-t">
+                  <Button
+                    className="w-full"
+                    onClick={() => setVideoCallOpen(true)}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Call Operator
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </main>
       <BottomNav />
+      
+      {/* Video Call Modal */}
+      {videoCallOpen && delivery?.operator_id && (
+        <VideoCall
+          isOpen={videoCallOpen}
+          onClose={() => setVideoCallOpen(false)}
+          peerId={user?.id || ""}
+          role="client"
+          deliveryId={delivery.id}
+        />
+      )}
     </div>
   );
 }
