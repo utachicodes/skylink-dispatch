@@ -86,7 +86,7 @@ SkyLink follows a three-tier architecture:
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/utachicodes/skylink-dispatch
    cd skylink-dispatch
    ```
 
@@ -232,32 +232,6 @@ curl http://localhost:3000/api/missions \
   -H "Authorization: Bearer YOUR_SUPABASE_TOKEN"
 ```
 
-## Deployment
-
-### Deploy to Vercel (Everything in One Place)
-
-**Everything runs on Vercel - no separate backend server needed!**
-
-1. **Connect Repository to Vercel**
-   - Go to [vercel.com](https://vercel.com)
-   - Import your GitHub/GitLab repository
-   - Vercel will auto-detect the project
-
-2. **Set Environment Variables**
-   In Vercel dashboard → Settings → Environment Variables:
-   ```
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
-
-3. **Deploy**
-   - Push to main branch → Vercel auto-deploys
-   - API routes available at `https://your-domain.vercel.app/api/*`
-   - Frontend at `https://your-domain.vercel.app`
-
-**That's it!** No separate backend hosting needed. See [VERCEL_BACKEND_SETUP.md](./VERCEL_BACKEND_SETUP.md) for detailed setup instructions.
 
 ## Contributing
 
