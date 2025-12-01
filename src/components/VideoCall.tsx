@@ -26,9 +26,101 @@ interface VideoCallProps {
 
 // Stream.io configuration - Stream.io is a video calling service that requires an API key
 // Get your API key from https://getstream.io (free account)
-// Add to .env.local: VITE_STREAM_API_KEY=your_stream_api_key_from_getstream_io
+// Add to .env.local: 
+//   VITE_STREAM_API_KEY=your_stream_api_key_from_getstream_io
+//   VITE_STREAM_API_SECRET=your_stream_api_secret_from_getstream_io
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY || '';
-const STREAM_TOKEN_ENDPOINT = '/api/stream/token'; // Vercel serverless function endpoint
+// Support both VITE_STREAM_API_SECRET and STREAM_API_SECRET for backwards compatibility
+const STREAM_API_SECRET = import.meta.env.VITE_STREAM_API_SECRET || import.meta.env.STREAM_API_SECRET || '';
+const IS_DEV = import.meta.env.DEV;
+
+const base64UrlEncode = (input: string | ArrayBuffer) => {
+  let bytes: Uint8Array;
+  if (typeof input === "string") {
+    bytes = new TextEncoder().encode(input);
+  } else {
+    bytes = new Uint8Array(input);
+  }
+
+  let binary = "";
+  bytes.forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+};
+
+const generateStreamJwt = async (userId: string): Promise<string> => {
+  if (typeof window === "undefined" || !window.crypto?.subtle) {
+    throw new Error("Web Crypto API not available. Stream token cannot be signed in this environment.");
+  }
+
+  if (!STREAM_API_SECRET) {
+    throw new Error("STREAM_API_SECRET is required for token generation");
+  }
+
+  const header = { alg: "HS256", typ: "JWT" };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    user_id: userId,
+    iat: now,
+    exp: now + 60 * 60, // 1 hour expiry
+    iss: STREAM_API_KEY,
+  };
+
+  const unsignedToken = `${base64UrlEncode(JSON.stringify(header))}.${base64UrlEncode(JSON.stringify(payload))}`;
+  const encoder = new TextEncoder();
+  
+  try {
+    const key = await window.crypto.subtle.importKey(
+      "raw",
+      encoder.encode(STREAM_API_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+
+    const signature = await window.crypto.subtle.sign("HMAC", key, encoder.encode(unsignedToken));
+    const signatureBase64 = base64UrlEncode(signature);
+    return `${unsignedToken}.${signatureBase64}`;
+  } catch (err) {
+    console.error('[VideoCall] Crypto signing error:', err);
+    throw new Error("Failed to sign JWT token. Check that STREAM_API_SECRET is valid.");
+  }
+};
+
+const getStreamToken = async (userId: string): Promise<string> => {
+  // Always use Web Crypto API for token generation (browser-compatible, no jsonwebtoken needed)
+  if (STREAM_API_SECRET && STREAM_API_SECRET.trim() !== '') {
+    try {
+      const token = await generateStreamJwt(userId);
+      console.log('[VideoCall] Token generated using Web Crypto API');
+      return token;
+    } catch (err: any) {
+      console.error('[VideoCall] JWT generation failed:', err);
+      throw new Error(`Failed to generate Stream token: ${err.message || 'Unknown error'}`);
+    }
+  }
+
+  // Fallback: Use Stream's dev token only in development (no secret needed, browser-only)
+  if (IS_DEV) {
+    try {
+      // Use dynamic import to avoid bundling issues
+      const { StreamChat } = await import("stream-chat");
+      // Create a new instance to avoid any cached state
+      const browserClient = StreamChat.getInstance(STREAM_API_KEY, {
+        // Ensure we're using browser-compatible methods only
+        logger: 'error', // Reduce logging
+      });
+      // devToken is browser-safe and doesn't require jsonwebtoken
+      const devToken = browserClient.devToken(userId);
+      console.log('[VideoCall] Dev token generated');
+      return devToken;
+    } catch (err: any) {
+      console.error('[VideoCall] Dev token generation failed:', err);
+      throw new Error(`Failed to generate dev token: ${err.message || 'Make sure stream-chat is installed'}`);
+    }
+  }
+
+  throw new Error("Stream API secret missing. Add VITE_STREAM_API_SECRET to .env.local to enable video calls.");
+};
 
 export function VideoCall({ isOpen, onClose, peerId, role, deliveryId }: VideoCallProps) {
   const { user: authUser } = useAuth();
@@ -38,40 +130,35 @@ export function VideoCall({ isOpen, onClose, peerId, role, deliveryId }: VideoCa
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen || !STREAM_API_KEY) {
+    if (!isOpen) {
+      return;
+    }
+
+    if (!STREAM_API_KEY) {
       setError("Stream.io API key not configured. Add VITE_STREAM_API_KEY to .env.local");
       setLoading(false);
       return;
     }
+
+    console.log('[VideoCall] Initializing call with:', {
+      isOpen,
+      hasApiKey: !!STREAM_API_KEY,
+      hasApiSecret: !!STREAM_API_SECRET,
+      isDev: IS_DEV,
+      peerId,
+      role,
+      deliveryId,
+    });
 
     const initializeCall = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Generate Stream token from your backend (Vercel serverless function)
-        // This endpoint uses Stream.io's server SDK to generate tokens securely
-        const { supabase } = await import('@/integrations/supabase/client');
-        const { data: { session } } = await supabase.auth.getSession();
-        const tokenResponse = await fetch(STREAM_TOKEN_ENDPOINT, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token || ''}`,
-          },
-          body: JSON.stringify({
-            userId: authUser?.id || peerId,
-            role,
-            deliveryId,
-          }),
-        });
-
-        if (!tokenResponse.ok) {
-          throw new Error("Failed to get Stream token. Make sure STREAM_API_KEY and STREAM_API_SECRET are set in Vercel environment variables.");
-        }
-
-        const data = await tokenResponse.json();
-        const token = data.token;
+        const userId = authUser?.id || peerId;
+        console.log('[VideoCall] Generating token for userId:', userId);
+        const token = await getStreamToken(userId);
+        console.log('[VideoCall] Token generated successfully');
 
         // Create user object
         const user: User = {

@@ -72,63 +72,52 @@ export default function Auth() {
     }
   };
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-[#03050a] text-white">
-      <div className="absolute inset-0 opacity-60 blur-3xl" style={{ backgroundImage: "var(--ride-glow)" }} />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(10,15,35,0.8),_rgba(3,5,10,1))]" />
+  const highlights = [
+    "End-to-end encrypted missions",
+    "Joystick + touchscreen cockpit",
+    "Supabase-authenticated access",
+    "Jetson link watchdogs online",
+  ];
 
-      <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
-        <section className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-16 py-14 flex flex-col justify-between gap-10">
-          <div className="space-y-8">
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              className="focus:outline-none"
-            >
+  return (
+    <div className="relative min-h-screen text-foreground">
+      <div className="aero-shell relative py-16 lg:py-24">
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
+          <div className="glass-panel border-white/15 bg-gradient-to-br from-white/3 via-transparent to-white/10 p-8 lg:p-10 space-y-8">
+            <div className="flex items-center gap-3">
               <img src="/logo-final.png" alt="SkyLink" className="h-16 animate-logo-glow" />
-            </button>
+              <span className="text-xs tracking-[0.35em] text-white/60 uppercase">Secure Login</span>
+            </div>
             <div className="space-y-4">
-              <p className="text-sm uppercase tracking-[0.4em] text-white/60">Senegal mission control</p>
-              <h1 className="text-4xl lg:text-5xl font-semibold leading-tight">
-                Drones for hard-to-reach places
+              <h1 className="text-4xl lg:text-5xl font-semibold leading-tight text-white">
+                Connect to the cockpit
               </h1>
-              <p className="text-white/70 text-lg">
-                Based in Senegal. Fire crews, hospitals, restaurants, and delivery teams use SkyLink. Operators log in from anywhere and start earning.
+              <p className="text-white/70 text-base">
+                Clients launch corridors, operators take the sticks, all in one aviation-grade dashboard.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              {[
-                { icon: Shield, title: "Trusted agencies", text: "Fire, police, medics" },
-                { icon: Globe, title: "140+ regions", text: "Islands • deserts • cities" },
-                { icon: RadioTower, title: "Always-on link", text: "Low-bandwidth modes" },
-                { icon: Users, title: "New jobs", text: "Remote drone operators" },
-              ].map((item) => (
-                <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4 flex items-start gap-3">
-                  <item.icon className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-white font-semibold">{item.title}</p>
-                    <p className="text-white/70 text-xs">{item.text}</p>
-                  </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {highlights.map((item) => (
+                <div key={item} className="rounded-2xl border border-white/10 bg-white/5/60 p-4 text-sm text-white/75 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span>{item}</span>
                 </div>
               ))}
             </div>
-          </div>
-          <div className="text-sm text-white/60">
-            Need enterprise onboarding? <span className="text-white">ops@skylink.com</span>
-          </div>
-        </section>
-
-        <section className="w-full lg:w-1/2 px-6 sm:px-10 lg:px-16 py-12 flex items-center">
-          <div className="w-full space-y-6">
-            <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-white/60">
-                {isLogin ? "Sign in" : "New account"}
-              </p>
-              <h2 className="text-3xl font-semibold mt-3">
-                {isLogin ? "Sign in" : "Create account"}
-              </h2>
+            <div className="text-xs text-white/60">
+              Need enterprise access? <span className="text-white">ops@skylink.com</span>
             </div>
-            <form onSubmit={handleAuth} className="space-y-5">
+          </div>
+
+          <div className="flex w-full justify-center">
+            <div className="glass-panel p-8 border-white/10 space-y-6 w-full max-w-md">
+              <div>
+                <p className="text-xs uppercase tracking-[0.35em] text-white/60 mb-2">{isLogin ? "Return pilot" : "New profile"}</p>
+                <h2 className="text-2xl font-semibold text-white">
+                  {isLogin ? "Sign in" : "Create account"}
+                </h2>
+              </div>
+              <form onSubmit={handleAuth} className="space-y-5">
               {!isLogin && (
                 <>
                   <div className="space-y-2">
@@ -191,7 +180,7 @@ export default function Auth() {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-accent text-black font-semibold py-6"
+                className="w-full bg-gradient-to-r from-primary via-primary/90 to-white/85 text-background font-semibold py-6 shadow-[0_15px_40px_rgba(5,196,255,0.25)]"
                 disabled={loading}
               >
                 {loading ? (
@@ -205,22 +194,20 @@ export default function Auth() {
                   "Create Account"
                 )}
               </Button>
-            </form>
-            <div className="text-sm text-white/70">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-accent hover:underline"
-              >
-                {isLogin ? "Sign up" : "Sign in"}
-              </button>
+              </form>
+              <div className="text-sm text-white/70 text-center">
+                {isLogin ? "Don't have an account?" : "Already registered?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-primary hover:underline"
+                >
+                  {isLogin ? "Sign up" : "Sign in"}
+                </button>
+              </div>
             </div>
-            <p className="text-xs text-white/40">
-              By continuing, you agree to our terms and privacy policy.
-            </p>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );

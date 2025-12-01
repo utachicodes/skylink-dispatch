@@ -8,96 +8,98 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Core palette: deep blue + white, subtle slate neutrals */
-    --background: 215 40% 6%;
-    --foreground: 210 40% 98%;
+    /* DJI-inspired “shark” neutral palette with crisp cyan highlights */
+    --background: 215 12% 6%;
+    --foreground: 210 32% 96%;
 
-    --card: 215 32% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 10% 9%;
+    --card-foreground: 210 28% 96%;
 
-    --popover: 215 32% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 10% 9%;
+    --popover-foreground: 210 32% 96%;
 
-    --primary: 215 90% 56%; /* main blue */
-    --primary-foreground: 210 40% 98%;
+    --primary: 197 88% 67%;
+    --primary-foreground: 218 24% 8%;
 
-    --secondary: 215 32% 18%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14% 16%;
+    --secondary-foreground: 210 30% 94%;
 
-    --muted: 215 20% 22%;
-    --muted-foreground: 215 15% 72%;
+    --muted: 220 9% 26%;
+    --muted-foreground: 210 14% 74%;
 
-    --accent: 210 40% 96%; /* soft white/blue accent for surfaces */
-    --accent-foreground: 215 40% 20%;
+    --accent: 215 16% 18%;
+    --accent-foreground: 210 28% 92%;
 
-    --destructive: 0 72% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 3 78% 58%;
+    --destructive-foreground: 210 30% 96%;
 
-    --border: 215 25% 24%;
-    --input: 215 25% 24%;
-    --ring: 215 90% 56%;
+    --border: 218 12% 21%;
+    --input: 218 12% 21%;
+    --ring: 197 88% 67%;
 
-    --radius: 0.75rem;
+    --radius: 0.85rem;
     
-    --sky-gradient: linear-gradient(135deg, hsl(215, 90%, 52%) 0%, hsl(220, 80%, 46%) 40%, hsl(215, 40%, 16%) 100%);
-    --ride-glow: radial-gradient(circle at top, hsla(215, 90%, 58%, 0.45), transparent 55%);
+    --sky-gradient: linear-gradient(135deg, hsl(215, 70%, 14%) 0%, hsl(218, 46%, 10%) 50%, hsl(220, 30%, 7%) 100%);
+    --ride-glow: radial-gradient(circle at top, hsla(197, 88%, 67%, 0.32), transparent 55%);
+    --aero-gradient: radial-gradient(circle at 20% 20%, rgba(124,140,160,0.25), transparent 55%), radial-gradient(circle at 80% 0%, rgba(197,233,255,0.15), transparent 45%);
+    --mesh-highlight: linear-gradient(120deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+
     --success: 142 70% 45%;
     --warning: 38 92% 60%;
-    --info: 214 95% 68%;
+    --info: 200 90% 70%;
 
-    --sidebar-background: 220 17% 6%;
+    --sidebar-background: 220 12% 6%;
     --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 226 93% 66%;
-    --sidebar-primary-foreground: 222 73% 12%;
-    --sidebar-accent: 220 16% 12%;
+    --sidebar-primary: 197 88% 67%;
+    --sidebar-primary-foreground: 210 30% 10%;
+    --sidebar-accent: 218 14% 16%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 218 14% 24%;
-    --sidebar-ring: 226 93% 66%;
+    --sidebar-ring: 197 88% 67%;
   }
 
   .dark {
-    /* Dark mode stays in the same blue / white family, just deeper */
-    --background: 215 40% 4%;
-    --foreground: 210 40% 98%;
+    --background: 216 12% 4%;
+    --foreground: 210 32% 96%;
 
-    --card: 215 32% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 10% 8%;
+    --card-foreground: 210 32% 96%;
 
-    --popover: 215 32% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 10% 8%;
+    --popover-foreground: 210 32% 96%;
 
-    --primary: 215 90% 56%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 197 88% 67%;
+    --primary-foreground: 218 24% 8%;
 
-    --secondary: 215 32% 14%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14% 12%;
+    --secondary-foreground: 210 32% 92%;
 
-    --muted: 215 22% 18%;
-    --muted-foreground: 215 15% 72%;
+    --muted: 220 10% 20%;
+    --muted-foreground: 210 14% 74%;
 
-    --accent: 215 30% 22%;
-    --accent-foreground: 210 40% 96%;
+    --accent: 220 12% 16%;
+    --accent-foreground: 210 32% 94%;
 
-    --destructive: 0 78% 50%;
+    --destructive: 2 80% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 215 24% 20%;
-    --input: 215 24% 20%;
-    --ring: 215 90% 56%;
+    --border: 218 12% 18%;
+    --input: 218 12% 18%;
+    --ring: 197 88% 67%;
     
-    --sky-gradient: linear-gradient(135deg, hsl(215, 90%, 52%) 0%, hsl(220, 80%, 46%) 45%, hsl(215, 40%, 12%) 100%);
+    --sky-gradient: linear-gradient(135deg, hsl(215, 64%, 10%) 0%, hsl(220, 40%, 8%) 45%, hsl(215, 28%, 6%) 100%);
     --success: 142 70% 45%;
     --warning: 38 92% 60%;
-    --info: 214 95% 68%;
+    --info: 200 90% 70%;
 
-    --sidebar-background: 215 40% 4%;
+    --sidebar-background: 215 12% 4%;
     --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 215 90% 56%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 215 32% 12%;
+    --sidebar-primary: 197 88% 67%;
+    --sidebar-primary-foreground: 218 24% 8%;
+    --sidebar-accent: 215 12% 10%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 215 24% 20%;
-    --sidebar-ring: 215 90% 56%;
+    --sidebar-border: 215 18% 18%;
+    --sidebar-ring: 197 88% 67%;
   }
 }
 
@@ -108,6 +110,8 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv02", "cv03";
+    font-family: "Space Grotesk", "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   .animate-logo-glow {
@@ -175,27 +179,303 @@ All colors MUST be HSL.
   }
 }
 
-/* NippleJS Virtual Joystick Styles */
+/* NippleJS Virtual Joystick Styles - Professional & Precise */
 .nipple {
   position: absolute;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   touch-action: none;
+  z-index: 10;
+  will-change: transform;
 }
 
 .nipple .front {
   position: absolute;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.5);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.2) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 2px 6px rgba(255, 255, 255, 0.25),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 80px !important;
+  height: 80px !important;
+  cursor: grab;
+}
+
+.nipple.active .front {
+  cursor: grabbing;
+  box-shadow: 
+    0 6px 30px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(255, 255, 255, 0.3),
+    inset 0 2px 12px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 12px rgba(0, 0, 0, 0.15);
+  transform: translate(-50%, -50%) scale(1.05);
 }
 
 .nipple .back {
-  position: absolute;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: none !important; /* Hide touch indicator circle */
+}
+
+/* Left joystick (Neutral Gray/Throttle & Yaw) - Premium DJI-style */
+.nipple[data-color="#9ca3af"] .front {
+  background: radial-gradient(circle at 30% 30%, rgba(229, 231, 235, 0.6) 0%, rgba(209, 213, 219, 0.35) 40%, rgba(107, 114, 128, 0.2) 100%);
+  border: 2px solid rgba(197, 233, 255, 0.35);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(197, 233, 255, 0.15),
+    inset 0 3px 8px rgba(255, 255, 255, 0.25),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nipple[data-color="#9ca3af"].active .front {
+  border-color: rgba(197, 233, 255, 0.6);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    0 0 32px rgba(197, 233, 255, 0.25),
+    inset 0 3px 12px rgba(255, 255, 255, 0.35),
+    inset 0 -3px 10px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.nipple[data-color="#9ca3af"] .back {
+  display: none !important; /* Hide touch indicator circle */
+}
+
+/* Drone marker pulse animation */
+@keyframes drone-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.1); 
+    opacity: 0.8; 
+  }
+}
+
+.current-drone-marker {
+  animation: drone-pulse 2s infinite;
+}
+
+/* ============================================================
+   Layout Utilities – Lightweight, DJI-inspired glass panels
+   ============================================================ */
+@layer components {
+  .aero-shell {
+    @apply relative mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10;
+  }
+
+  .glass-panel {
+    @apply rounded-[28px] border border-white/10 bg-white/5;
+    @apply shadow-[0_20px_80px_rgba(0,0,0,0.45)] overflow-hidden;
+    background: rgba(6, 8, 12, 0.65);
+    backdrop-filter: blur(32px);
+    position: relative;
+    isolation: isolate;
+  }
+
+  .glass-panel::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: 26px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0));
+    z-index: -1;
+    opacity: 0.7;
+  }
+
+  .holo-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-xs uppercase tracking-[0.2em] text-white/70;
+    background: rgba(12,14,18,0.8);
+    box-shadow: inset 0 0 12px rgba(255,255,255,0.05);
+  }
+
+  .grid-divider {
+    @apply h-px w-full;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  }
+
+  .radial-outline {
+    @apply rounded-3xl;
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  }
+
+  .status-pill {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase;
+    background: rgba(19,22,30,0.75);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+}
+
+/* ============================================
+   MEDIA QUERIES FOR RESPONSIVE DESIGN
+   ============================================ */
+
+/* Mobile devices (portrait) - up to 640px */
+@media (max-width: 640px) {
+  /* Pilot Control - Mobile optimizations */
+  .pilot-control-container {
+    touch-action: pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Joysticks - Smaller on mobile */
+  .joystick-container {
+    transform: scale(0.85);
+  }
+
+  /* Top bar - Stack controls on very small screens */
+  .pilot-top-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .pilot-top-bar .control-buttons {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .pilot-top-bar .status-badges {
+    flex: 1 1 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  /* Map panel - Full width on mobile */
+  .map-panel-mobile {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    bottom: 8rem !important;
+  }
+
+  /* Manual mode button - Smaller on mobile */
+  .manual-mode-button {
+    padding: 0.75rem 1.5rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Tablet devices (portrait) - 641px to 768px */
+@media (min-width: 641px) and (max-width: 768px) {
+  /* Joysticks - Medium size */
+  .joystick-container {
+    transform: scale(0.95);
+  }
+
+  /* Top bar - Better spacing */
+  .pilot-top-bar {
+    padding: 1rem 1.25rem;
+  }
+}
+
+/* Tablet devices (landscape) and small desktops - 769px to 1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Joysticks - Full size */
+  .joystick-container {
+    transform: scale(1);
+  }
+
+  /* Map panel - Better positioning */
+  .map-panel-tablet {
+    bottom: 10rem !important;
+  }
+}
+
+/* Large desktops - 1025px and above */
+@media (min-width: 1025px) {
+  /* Full desktop experience */
+  .joystick-container {
+    transform: scale(1);
+  }
+
+  /* Top bar - More spacing */
+  .pilot-top-bar {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+/* Landscape orientation optimizations */
+@media (orientation: landscape) and (max-height: 600px) {
+  /* Compact mode for landscape phones */
+  .pilot-top-bar {
+    padding: 0.5rem 1rem;
+  }
+
+  .joystick-container {
+    transform: scale(0.75);
+    bottom: 1rem !important;
+  }
+
+  .manual-mode-button {
+    bottom: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  .map-panel-mobile {
+    top: 3.5rem !important;
+    bottom: 6rem !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets on mobile */
+  .pilot-control-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better spacing for touch */
+  .pilot-top-bar .control-buttons {
+    gap: 0.75rem;
+  }
+
+  /* Prevent text selection on controls */
+  .pilot-control-container * {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Allow text selection in map panel */
+  .map-panel-mobile {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Sharper borders and shadows */
+  .joystick-container {
+    border-width: 1.5px;
+  }
+}
+
+/* Dark mode support (already handled by Tailwind, but ensuring consistency) */
+@media (prefers-color-scheme: dark) {
+  /* Already using dark theme, but ensure contrast */
+  .pilot-control-container {
+    background-color: #000000;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .joystick-container,
+  .pilot-control-button,
+  .manual-mode-button {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .current-drone-marker {
+    animation: none !important;
+  }
 }

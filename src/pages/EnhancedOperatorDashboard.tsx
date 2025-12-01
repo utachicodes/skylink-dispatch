@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Package, MapPin, Clock, Check, X, Coins, LogOut, Bell, 
   TrendingUp, Activity, Zap, Users, DollarSign, Target,
-  Calendar, BarChart3, ArrowUpRight, ChevronRight
+  Calendar, BarChart3, ArrowUpRight, ChevronRight, UserMinus
 } from "lucide-react";
 import { deliveryService } from "@/lib/deliveryService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +18,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { VideoCall } from "@/components/VideoCall";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Phone } from "lucide-react";
 
 export default function EnhancedOperatorDashboard() {
@@ -29,6 +39,9 @@ export default function EnhancedOperatorDashboard() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [videoCallOpen, setVideoCallOpen] = useState(false);
   const [videoCallDeliveryId, setVideoCallDeliveryId] = useState<string | null>(null);
+  const [unassignDialogOpen, setUnassignDialogOpen] = useState(false);
+  const [deliveryToUnassign, setDeliveryToUnassign] = useState<string | null>(null);
+  const [unassigning, setUnassigning] = useState(false);
 
   useEffect(() => {
     if (!user || !userRole) return;
@@ -141,6 +154,44 @@ export default function EnhancedOperatorDashboard() {
     setDeliveries(prev => prev.filter(d => d.id !== delivery.id));
   };
 
+  const handleUnassignClick = (deliveryId: string) => {
+    setDeliveryToUnassign(deliveryId);
+    setUnassignDialogOpen(true);
+  };
+
+  const handleUnassignConfirm = async () => {
+    if (!deliveryToUnassign || !user) return;
+
+    setUnassigning(true);
+    try {
+      await deliveryService.unassignOperator(deliveryToUnassign, user.id);
+      toast.success("Successfully unassigned from delivery");
+      setUnassignDialogOpen(false);
+      setDeliveryToUnassign(null);
+      // Refresh deliveries
+      const { data: deliveryData, error: deliveryError } = await supabase
+        .from("deliveries")
+        .select("*")
+        .or(`operator_id.eq.${user.id},status.eq.pending`)
+        .order("created_at", { ascending: false });
+
+      if (!deliveryError && deliveryData) {
+        setDeliveries(deliveryData);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to unassign from delivery");
+    } finally {
+      setUnassigning(false);
+    }
+  };
+
+  const canUnassign = (delivery: any) => {
+    // Only allow unassigning if operator is assigned and delivery is not in progress
+    return delivery.operator_id === user?.id && 
+           delivery.status === "confirmed" && 
+           !["in_flight", "arrived"].includes(delivery.status);
+  };
+
   const renderDeliveryCard = (delivery: any, showActions = true) => (
     <Card key={delivery.id} className="group hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5">
       <CardHeader className="pb-3">
@@ -218,6 +269,17 @@ export default function EnhancedOperatorDashboard() {
           
           {delivery.operator_id === user?.id && (delivery.status === "confirmed" || delivery.status === "in_flight") && (
             <div className="flex gap-2">
+              {canUnassign(delivery) && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => handleUnassignClick(delivery.id)}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <UserMinus className="h-4 w-4 mr-1" />
+                  Unassign
+                </Button>
+              )}
               <Button 
                 size="sm" 
                 variant="outline"
@@ -521,6 +583,28 @@ export default function EnhancedOperatorDashboard() {
           deliveryId={videoCallDeliveryId}
         />
       )}
+
+      {/* Unassign Confirmation Dialog */}
+      <AlertDialog open={unassignDialogOpen} onOpenChange={setUnassignDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unassign from Delivery</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unassign yourself from this delivery? The delivery will be returned to the available pool for other operators to accept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={unassigning}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUnassignConfirm}
+              disabled={unassigning}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {unassigning ? "Unassigning..." : "Unassign"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

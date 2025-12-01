@@ -62,6 +62,37 @@ export const deliveryService = {
     return data;
   },
 
+  async unassignOperator(deliveryId: string, operatorId: string) {
+    // Verify the operator is assigned to this delivery
+    const delivery = await this.getDelivery(deliveryId);
+    
+    if (delivery.operator_id !== operatorId) {
+      throw new Error("You are not assigned to this delivery");
+    }
+
+    // Prevent unassigning if delivery is in flight or arrived
+    if (["in_flight", "arrived"].includes(delivery.status)) {
+      throw new Error("Cannot unassign from a delivery that is in progress");
+    }
+
+    const updates: DeliveryUpdate = {
+      operator_id: null,
+      status: "pending",
+      updated_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase
+      .from("deliveries")
+      .update(updates)
+      .eq("id", deliveryId)
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) throw new Error("Delivery not found");
+    return data;
+  },
+
   async getDelivery(deliveryId: string) {
     const { data, error } = await supabase
       .from("deliveries")
@@ -84,5 +115,24 @@ export const deliveryService = {
 
     if (error) throw error;
     return data;
+  },
+
+  async deleteDelivery(deliveryId: string) {
+    // Only allow deletion if delivery is pending or cancelled
+    // Check status first
+    const delivery = await this.getDelivery(deliveryId);
+    
+    // Prevent deletion of active deliveries
+    if (["confirmed", "in_flight", "arrived"].includes(delivery.status)) {
+      throw new Error("Cannot delete an active delivery. Please cancel it first.");
+    }
+
+    const { error } = await supabase
+      .from("deliveries")
+      .delete()
+      .eq("id", deliveryId);
+
+    if (error) throw error;
+    return { success: true };
   }
 };

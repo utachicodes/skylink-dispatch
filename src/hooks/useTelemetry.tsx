@@ -14,6 +14,14 @@ export const useTelemetry = (options: Options = {}) => {
 
   useEffect(() => {
     if (!autoConnect) return;
+    
+    // Skip if CORE_API_URL is set to Jetson (which doesn't have this endpoint)
+    const coreApiUrl = import.meta.env.VITE_CORE_API_URL || "";
+    if (coreApiUrl.includes("172.24.237.66") || coreApiUrl.includes("jetson")) {
+      console.log("[useTelemetry] Skipping telemetry stream (Jetson server doesn't have /api/telemetry/stream)");
+      setConnected(false);
+      return;
+    }
 
     const eventSource = new EventSource(streamUrl);
     setConnected(true);
